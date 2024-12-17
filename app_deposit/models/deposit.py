@@ -14,6 +14,10 @@ class Currency(BaseModel):
     currency_symbol = models.CharField(max_length=255)
     created_by = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='currency')
 
+    class Meta:
+        db_table = 'currency'
+        verbose_name = 'Currencies'
+
     def __str__(self):
         return f"{self.name} - {self.currency_symbol}"
 
@@ -22,19 +26,18 @@ class Currency(BaseModel):
 class Deposit(BaseModel):
     # Foreign Key relationships
     merchant = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='merchant_deposits')
-    customer = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='customer_deposits')
+    customer = models.CharField(max_length=255)
     bank = models.ForeignKey(BankModel, on_delete=models.CASCADE, related_name='bank_deposits')
     agent = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='agent_deposits')
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_deposits')
 
     # Fields
     order_id = models.CharField(max_length=255, unique=True)  # Order ID from merchant's side
     oxp_id = models.CharField(max_length=255, unique=True)  # Created on our side
     txn_id = models.CharField(max_length=255, unique=True)  # Transaction ID from the bank
     requested_amount = models.DecimalField(max_digits=15, decimal_places=2)  # Amount requested by merchant
-    requested_currency = models.CharField(max_length=10)  # Currency requested by merchant
+    requested_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_request", null=True)  # Currency requested by merchant
     received_amount = models.DecimalField(max_digits=15, decimal_places=2)  # Exact amount received
-    received_currency = models.CharField(max_length=10)  # Bank currency
+    received_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_receive", null=True)  # Bank currency
     created_on = models.DateTimeField(auto_now_add=True)  # Timestamp of creation
     last_updated = models.DateTimeField(auto_now=True)  # Timestamp of the last status update
     sender_no = models.CharField(max_length=20)  # Payer's/user's/player's bank number
