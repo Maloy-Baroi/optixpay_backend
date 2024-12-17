@@ -28,8 +28,15 @@ class Profile(BaseModel):
         # Add more as needed
     ]
 
+    PROFILE_CHOICES = [
+        ('CS', 'Customer'),
+        ('MC', 'Merchant'),
+        ('AG', 'Agent'),
+    ]
+
     # Fields
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    profile_type = models.CharField(max_length=3, choices=PROFILE_CHOICES, verbose_name="Profile_type",default='CS')
     full_name = models.CharField(max_length=255, verbose_name="Full Name")
     country = models.CharField(max_length=3, choices=COUNTRY_CHOICES, verbose_name="Country")
     phone_number = models.CharField(

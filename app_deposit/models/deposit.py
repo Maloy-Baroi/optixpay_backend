@@ -1,12 +1,31 @@
 from django.db import models
+from app_profile.models.profile import Profile
+from app_bank.models.bank import BankModel
+
+import uuid
+
+from core.models.BaseModel import BaseModel
 
 
-class Deposit(models.Model):
+class Currency(BaseModel):
+
+    name = models.CharField(max_length=255, unique=True)
+    currency_code =models.CharField(max_length=255,unique=True)
+    currency_symbol = models.CharField(max_length=255)
+    created_by = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='currency')
+
+    def __str__(self):
+        return f"{self.name} - {self.currency_symbol}"
+
+
+
+class Deposit(BaseModel):
     # Foreign Key relationships
-    merchant = models.ForeignKey('Merchant', on_delete=models.CASCADE, related_name='deposits')
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='deposits')
-    bank = models.ForeignKey('Bank', on_delete=models.CASCADE, related_name='deposits')
-    agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='deposits', null=True, blank=True)
+    merchant = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='merchant_deposits')
+    customer = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='customer_deposits')
+    bank = models.ForeignKey(BankModel, on_delete=models.CASCADE, related_name='bank_deposits')
+    agent = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='agent_deposits')
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_deposits')
 
     # Fields
     order_id = models.CharField(max_length=255, unique=True)  # Order ID from merchant's side
@@ -18,7 +37,6 @@ class Deposit(models.Model):
     received_currency = models.CharField(max_length=10)  # Bank currency
     created_on = models.DateTimeField(auto_now_add=True)  # Timestamp of creation
     last_updated = models.DateTimeField(auto_now=True)  # Timestamp of the last status update
-    bank_id = models.CharField(max_length=255)  # Bank's unique ID
     sender_no = models.CharField(max_length=20)  # Payer's/user's/player's bank number
     receiver_no = models.CharField(max_length=20)  # Agent's bank number
     agent_commission = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)  # Agent commission
@@ -41,3 +59,11 @@ class Deposit(models.Model):
 
     class Meta:
         ordering = ['-created_on']  # Default sorting by created date descending
+
+    # def save(self, *args, **kwargs):
+    #     """Override save to automatically generate bank_unique_id before saving the instance."""
+    #     if not self.oxp_id:
+    #         self.oxp_id = str(uuid.uuid4())  # Generate a unique UUID as the bank_unique_id
+    #     if not self.txn_id:
+    #         self.txn_id = str(uuid.uuid4())  # Generate a unique UUID as the bank_unique_id
+    #     super().save(*args, **kwargs)

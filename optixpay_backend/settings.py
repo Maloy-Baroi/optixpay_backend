@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'app_auth.apps.AppAuthConfig',
     'app_profile',
     'app_deposit',
+    'app_withdraw',
+    'app_bank',
     # Additional Libraries
     'rest_framework',
     'rest_framework_simplejwt',
