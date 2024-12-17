@@ -3,28 +3,30 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from app_profile.models.profile import Profile
 from app_profile.serializers.profile import ProfileSerializer
+from services.pagination import CustomPagination
+
 
 class ProfileListCreateAPIView(APIView):
     """
     Handles listing all profiles and creating a new profile.
     """
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get(self, request):
-        """
-        List all profiles that are active (not soft-deleted).
-        """
-        profiles = Profile.objects.all()
-        serializer = ProfileSerializer(profiles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        profile_type = request.query_params.get('profile_type')
+        queryset = Profile.objects.all()
+        if profile_type:
+            queryset = queryset.filter(profile_type=profile_type)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = ProfileSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        """
-        Create a new profile.
-        """
-        serializer = ProfileSerializer(data=request.data, context={'request': request})
+        serializer = ProfileSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -37,46 +39,30 @@ class ProfileRetrieveUpdateAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return Profile.objects.get(id=pk)
+            return Profile.objects.get(pk=pk)
         except Profile.DoesNotExist:
             return None
 
     def get(self, request, pk):
-        """
-        Retrieve a specific profile by ID.
-        """
-        try:
-            profile = self.get_object(pk)
-            if not profile:
-                return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = ProfileSerializer(profile)
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        profile = self.get_object(pk)
+        if profile is None:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
 
     def put(self, request, pk):
-        """
-        Update a specific profile by ID.
-        """
         profile = self.get_object(pk)
-        is_active = request.data.get("is_active")
-        if not profile:
-            return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProfileSerializer(profile, data=request.data, context={'request': request}, partial=True)
+        if profile is None:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ProfileSerializer(profile, data=request.data)
         if serializer.is_valid():
-            serializer.save(updated_by=request.user, is_active=is_active)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        """
-        Soft-delete a specific profile by ID.
-        """
         profile = self.get_object(pk)
-        if not profile:
-            return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
-
+        if profile is None:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
         profile.soft_delete()
-        return Response({"message": "Profile soft-deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)

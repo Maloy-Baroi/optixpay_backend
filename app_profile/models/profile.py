@@ -29,16 +29,16 @@ class Profile(BaseModel):
     ]
 
     PROFILE_CHOICES = [
-        ('CS', 'Customer'),
-        ('MC', 'Merchant'),
-        ('AG', 'Agent'),
+        ('Admin', 'Admin'),
+        ('Merchant', 'Merchant'),
+        ('Agent', 'Agent'),
     ]
 
     # Fields
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    profile_type = models.CharField(max_length=3, choices=PROFILE_CHOICES, verbose_name="Profile_type",default='CS')
+    profile_type = models.CharField(max_length=20, choices=PROFILE_CHOICES, verbose_name="Profile_type",default='Agent')
     full_name = models.CharField(max_length=255, verbose_name="Full Name")
-    country = models.CharField(max_length=3, choices=COUNTRY_CHOICES, verbose_name="Country")
+    country = models.CharField(max_length=25, choices=COUNTRY_CHOICES, verbose_name="Country")
     phone_number = models.CharField(
         max_length=15,
         validators=[
