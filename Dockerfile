@@ -15,7 +15,7 @@ RUN pip install gunicorn
 COPY . .
 
 # Run database migrations
-RUN python manage.py migrate || true
+RUN python manage.py migrate
 
 # Expose port
 EXPOSE 8000
