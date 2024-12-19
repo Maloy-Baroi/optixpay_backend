@@ -48,7 +48,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     write_uid = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL,
                                   related_name='written_users')
     is_staff = models.BooleanField(default=False)  # Add this field
-    is_active = models.BooleanField(default=False)  # This field is also often required
+    is_active = models.BooleanField(default=True)  # This field is also often required
     new_user = models.BooleanField(default=True)
 
     objects = CustomUserManager()

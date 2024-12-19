@@ -17,13 +17,13 @@ class DepositListAPIView(APIView):
 
         if search_keyword:
             deposits = Deposit.objects.filter(
-                Q(customer__icontains=search_keyword) |
+                Q(customer_id__icontains=search_keyword) |
                 Q(order_id__icontains=search_keyword) |
                 Q(oxp_id__icontains=search_keyword) |
                 Q(txn_id__icontains=search_keyword) |
-                Q(sender_no__icontains=search_keyword) |
-                Q(receiver_no__icontains=search_keyword) |
-                Q(merchant__full_name__icontains=search_keyword) |  # Assuming 'name' is a field in Profile model
+                Q(sender_account__icontains=search_keyword) |
+                Q(receiver_account__icontains=search_keyword) |
+                Q(merchant_id__full_name__icontains=search_keyword) |  # Assuming 'name' is a field in Profile model
                 Q(bank__bank_name__icontains=search_keyword)  # Assuming 'name' is a field in BankModel
             )
         else:
