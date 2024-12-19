@@ -12,6 +12,11 @@ services:
       - db
     environment:
       - DEBUG=1
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      gunicorn optixpay_backend.wsgi:application --bind 0.0.0.0:8000
+      "
 
   db:
     image: postgres:14
@@ -19,9 +24,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: optixpay
-      POSTGRES_PASSWORD: optix_pay_123
-      POSTGRES_DB: optix_db
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: yourdb
 
 volumes:
   postgres_data:
