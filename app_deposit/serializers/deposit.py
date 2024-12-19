@@ -5,4 +5,4 @@ class DepositSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deposit
         fields = '__all__'  # Use all fields, or specify specific fields if needed
-        # read_only_fields = ['merchant']
+        read_only_fields = ['created_at', 'updated_at']

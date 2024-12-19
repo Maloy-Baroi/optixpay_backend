@@ -50,7 +50,7 @@ class DepositListAPIView(APIView):
 
         if serializer.is_valid():
             # Save the deposit record
-            deposit = serializer.save()
+            deposit = serializer.save(created_by=request.user, updated_by=request.user)
 
             # Return a response
             return Response({
