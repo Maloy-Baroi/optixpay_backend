@@ -19,12 +19,13 @@ SECRET_KEY = config('SECRET_KEY', None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', 'True') == 'True'
 
-if not DEBUG:
-    DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
-    ALLOWED_HOSTS = DOMAINS
-else:
-    ALLOWED_HOSTS = ['147.79.66.187', 'localhost']
-
+# if not DEBUG:
+#     DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
+#     ALLOWED_HOSTS = DOMAINS
+# else:
+#     ALLOWED_HOSTS = ['147.79.66.187', 'localhost']
+DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
+ALLOWED_HOSTS = DOMAINS
 # Application definition
 
 INSTALLED_APPS = [
