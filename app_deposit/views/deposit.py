@@ -45,8 +45,21 @@ class DepositListAPIView(APIView):
         serializer = DepositSerializer(deposits, many=True)
         return Response({"message": "Data Found!", "data": serializer.data}, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        pass
+    def post(self, request, *args, **kwargs):
+        serializer = DepositSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the deposit record
+            deposit = serializer.save()
+
+            # Return a response
+            return Response({
+                "message": "Deposit created successfully.",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        # Return validation errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DepositAPIView(APIView):
