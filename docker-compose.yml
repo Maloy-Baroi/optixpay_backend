@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: django_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DEBUG=1
+
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: optixpay
+      POSTGRES_PASSWORD: optix_pay_123
+      POSTGRES_DB: optix_db
+
+volumes:
+  postgres_data:
