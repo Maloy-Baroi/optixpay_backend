@@ -17,5 +17,5 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Start Gunicorn server
-CMD ["gunicorn", "optixpay_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Run migrations and start Gunicorn server
+CMD ["sh", "-c", "python manage.py migrate && gunicorn optixpay_backend.wsgi:application --bind 0.0.0.0:8000"]
