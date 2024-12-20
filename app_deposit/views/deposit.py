@@ -1,4 +1,6 @@
 from django.db.models import Q
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -12,6 +14,18 @@ from services.pagination import CustomPagination
 class DepositListAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of deposits",
+        manual_parameters=[
+            openapi.Parameter(
+                'search_keyword',
+                openapi.IN_QUERY,
+                description="Keyword to search deposits by customer ID, order ID, etc.",
+                type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: DepositSerializer(many=True)}
+    )
     def get(self, request):
         search_keyword = request.query_params.get('search_keyword', None)
 
@@ -45,6 +59,14 @@ class DepositListAPIView(APIView):
         serializer = DepositSerializer(deposits, many=True)
         return Response({"message": "Data Found!", "data": serializer.data}, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="Create a new deposit",
+        request_body=DepositSerializer,
+        responses={
+            201: openapi.Response('Deposit created successfully.', DepositSerializer),
+            400: "Validation Error"
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = DepositSerializer(data=request.data)
 

@@ -146,8 +146,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
@@ -180,12 +179,18 @@ NAGAD_API_VERSION = 'v-0.2.0'  # as mentioned in the guide
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Ensure this is set globally or correctly overridden
+        'rest_framework.permissions.AllowAny',  # Ensure global permission is public unless overridden in views
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT authentication for APIs
     ),
 }
+
+# SWAGGER_SETTINGS = {
+#     'USE_SESSION_AUTH': False,  # Disable session-based authentication for Swagger
+#     'SECURITY_DEFINITIONS': None,  # Ensure Swagger doesn't enforce token-based authentication
+#     'DEFAULT_INFO': 'optixpay_backend.swagger_urls.schema_view',  # Ensure Swagger loads correctly
+# }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=180),
