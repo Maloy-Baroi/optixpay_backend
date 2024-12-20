@@ -186,6 +186,8 @@ REST_FRAMEWORK = {
     ),
 }
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 # SWAGGER_SETTINGS = {
 #     'USE_SESSION_AUTH': False,  # Disable session-based authentication for Swagger
 #     'SECURITY_DEFINITIONS': None,  # Ensure Swagger doesn't enforce token-based authentication
