@@ -23,12 +23,21 @@ class ProfileListCreateAPIView(APIView):
         serializer = ProfileSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    def post(self, request):
-        serializer = ProfileSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        try:
+            # Bind request data to serializer
+            serializer = ProfileSerializer(data=request.data, context={"request": request})
+            if serializer.is_valid():
+                # Save the profile with the authenticated user as the owner
+                serializer.save(user=request.user, created_by=request.user, updated_by=request.user)
+                return Response(
+                    {"message": "Profile created successfully.", "data": serializer.data},
+                    status=status.HTTP_201_CREATED
+                )
+            # Return validation errors
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ProfileRetrieveUpdateAPIView(APIView):

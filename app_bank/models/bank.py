@@ -7,21 +7,28 @@ from core.models.BaseModel import BaseModel
 import uuid
 
 class BankTypeModel(BaseModel):
-    name = models.CharField(max_length=50, unique=True, help_text="Name of the bank type, e.g., Bkash, Rocket, Nagad")
+    name = models.CharField(max_length=50, help_text="Name of the bank type, e.g., Bkash, Rocket, Nagad")
     CATEGORY_CHOICES = [
         ('p2p', 'Peer-to-Peer'),
         ('p2c', 'Peer-to-Customer'),
     ]
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type")
+    is_active = models.BooleanField(default=True)
 
 
     def __str__(self):
-        return f"{self.name} ({self.get_category_display()})"
+        return f"{self.name}_{self.get_category_display()}"
 
     class Meta:
         db_table = "bank_type"
         verbose_name = "Bank Type"
         verbose_name_plural = "Bank Types"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'category'],
+                name='unique_name_category'
+            )
+        ]
 
 
 class BankModel(BaseModel):

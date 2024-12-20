@@ -30,7 +30,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'updated_by',
             'is_active'
         ]
-        read_only_fields = ['user', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_active']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_active']
 
     def validate_phone_number(self, value):
         """Custom validation for Bangladeshi phone numbers."""

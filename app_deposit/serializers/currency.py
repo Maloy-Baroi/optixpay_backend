@@ -8,7 +8,7 @@ class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = '__all__'
-        read_only_fields = ['created_by']
+        read_only_fields = ['created_by', 'updated_by']
 
     def validate_name(self, value):
         """

@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/v1/app-profile/', include('app_profile.urls')),
     path('api/v1/app-deposit/', include('app_deposit.urls')),
     path('api/v1/app-withdraw/', include('app_withdraw.urls')),
+    path('api/v1/app-bank/', include('app_bank.urls')),
     path('api/v1/auth/', include('rest_framework.urls')),
 ]
 

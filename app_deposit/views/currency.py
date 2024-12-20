@@ -7,15 +7,19 @@ from rest_framework import status, permissions
 from app_deposit.models.deposit import Currency
 # from app_deposit.serializers.deposit import DepositSerializer
 from app_deposit.serializers.currency import CurrencySerializer
+from services.pagination import CustomPagination
 
 
 class CurrencyListPostAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
 
     def get(self, request):
         try:
-            currencies = Currency.objects.all()
-            serializer = CurrencySerializer(currencies, many=True)
+            queryset = Currency.objects.all()
+            paginator = self.pagination_class()
+            result_page = paginator.paginate_queryset(queryset, request)
+            serializer = CurrencySerializer(result_page, many=True)
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         except Currency.DoesNotExist:
             return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -23,7 +27,7 @@ class CurrencyListPostAPIView(APIView):
     def post(self, request):
         serializer = CurrencySerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(created_by=request.user, updated_by=request.user)
             return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
