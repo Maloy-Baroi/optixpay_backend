@@ -193,6 +193,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     'SECURITY_DEFINITIONS': None,  # Ensure Swagger doesn't enforce token-based authentication
 #     'DEFAULT_INFO': 'optixpay_backend.swagger_urls.schema_view',  # Ensure Swagger loads correctly
 # }
+# settings.py
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=180),
