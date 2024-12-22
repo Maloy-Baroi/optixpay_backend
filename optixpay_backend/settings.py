@@ -193,19 +193,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     'SECURITY_DEFINITIONS': None,  # Ensure Swagger doesn't enforce token-based authentication
 #     'DEFAULT_INFO': 'optixpay_backend.swagger_urls.schema_view',  # Ensure Swagger loads correctly
 # }
-# settings.py
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-CORS_ORIGIN_WHITELIST = [
-    'https://alpha-dashboard-gamma.vercel.app/',
-    'https://my-test-nog7lu9pn-maloybaroi1996gmailcoms-projects.vercel.app/',
-]
-
-# If using Django CORS headers library
-CORS_ALLOW_CREDENTIALS = True
 
 
 SIMPLE_JWT = {
