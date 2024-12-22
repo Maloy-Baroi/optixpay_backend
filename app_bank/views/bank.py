@@ -29,10 +29,10 @@ class BankListCreateAPIView(APIView):
             if serializer.is_valid() and profile:
                 serializer.save(agent=profile, created_by=request.user,
                                 updated_by=request.user)  # Will automatically set agent and bank_unique_id
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+            return Response({"status": "error", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BankModelAPIView(APIView):
