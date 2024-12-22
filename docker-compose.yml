@@ -41,5 +41,16 @@ services:
       - ./letsencrypt:/etc/letsencrypt
       - ./static:/static
 
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
+      - ./nginx:/etc/nginx/conf.d
+    entrypoint: >
+      sh -c "
+      certbot certonly --webroot -w /static/ -d yourdomain.com -d www.yourdomain.com
+      "
+
 volumes:
   postgres_data:
