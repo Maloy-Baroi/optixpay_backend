@@ -201,7 +201,7 @@ CSRF_COOKIE_SECURE = True
 
 CORS_ORIGIN_WHITELIST = [
     'https://alpha-dashboard-gamma.vercel.app/',
-    ''https://my-test-nog7lu9pn-maloybaroi1996gmailcoms-projects.vercel.app/',
+    'https://my-test-nog7lu9pn-maloybaroi1996gmailcoms-projects.vercel.app/',
 ]
 
 # If using Django CORS headers library
