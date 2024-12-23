@@ -20,10 +20,9 @@ SECRET_KEY = config('SECRET_KEY', None)
 DEBUG = config('DEBUG', 'True') == 'True'
 
 if not DEBUG:
-    DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
-    ALLOWED_HOSTS = DOMAINS
+    ALLOWED_HOSTS = ['optixpay.com', 'www.optixpay.com', 'localhost', '127.0.0.1']
 else:
-    ALLOWED_HOSTS = ['147.79.66.187', 'localhost', 'optixpay.com', 'www.optixpay.com']
+    ALLOWED_HOSTS = []
 
 # Application definition
 
