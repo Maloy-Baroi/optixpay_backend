@@ -14,6 +14,9 @@ RUN pip install gunicorn
 # Copy project files
 COPY . .
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 # Run database migrations
 RUN python manage.py migrate
 
@@ -21,4 +24,4 @@ RUN python manage.py migrate
 EXPOSE 8000
 
 # Start Gunicorn server
-CMD ["gunicorn", "optixpay_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "--timeout", "120", "--workers", "3", "optixpay_backend.wsgi:application", "--bind", "0.0.0.0:8000"]

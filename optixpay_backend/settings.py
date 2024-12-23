@@ -20,10 +20,9 @@ SECRET_KEY = config('SECRET_KEY', None)
 DEBUG = config('DEBUG', 'True') == 'True'
 
 if not DEBUG:
-    DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
-    ALLOWED_HOSTS = DOMAINS
+    ALLOWED_HOSTS = ['optixpay.com', 'www.optixpay.com', 'localhost', '127.0.0.1']
 else:
-    ALLOWED_HOSTS = ['147.79.66.187', 'localhost']
+    ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -86,14 +85,20 @@ WSGI_APPLICATION = 'optixpay_backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 if not DEBUG:
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': config('DB_NAME'),
+    #         'USER': config('DB_USER'),
+    #         'PASSWORD': config('DB_PASSWORD'),
+    #         'HOST': config('DB_HOST'),
+    #         'PORT': config('DB_PORT', '5432'),
+    #     }
+    # }
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST'),
-            'PORT': config('DB_PORT', '5432'),
+            'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 else:
@@ -187,6 +192,8 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # SWAGGER_SETTINGS = {
 #     'USE_SESSION_AUTH': False,  # Disable session-based authentication for Swagger
