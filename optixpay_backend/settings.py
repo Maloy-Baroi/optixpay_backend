@@ -23,7 +23,7 @@ if not DEBUG:
     DOMAINS = ast.literal_eval(config('DOMAINS', default='[]'))
     ALLOWED_HOSTS = DOMAINS
 else:
-    ALLOWED_HOSTS = ['147.79.66.187', 'localhost']
+    ALLOWED_HOSTS = ['147.79.66.187', 'localhost', 'optixpay.com', 'www.optixpay.com']
 
 # Application definition
 
