@@ -1,56 +1,13 @@
 version: '3.9'
 
 services:
-  web:
+  django:
     build: .
     container_name: django_app
     ports:
       - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=project_name.settings
     volumes:
       - .:/app
-    depends_on:
-      - db
-    environment:
-      - DEBUG=1
-    command: >
-      sh -c "
-      python manage.py migrate &&
-      gunicorn optixpay_backend.wsgi:application --bind 0.0.0.0:8000
-      "
-
-  db:
-    image: postgres:14
-    container_name: postgres_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: youruser
-      POSTGRES_PASSWORD: yourpassword
-      POSTGRES_DB: yourdb
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx_proxy
-    depends_on:
-      - web
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./letsencrypt:/etc/letsencrypt
-      - ./static:/static
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./letsencrypt:/etc/letsencrypt
-      - ./nginx:/etc/nginx/conf.d
-    entrypoint: >
-      sh -c "
-      certbot certonly --webroot -w /static/ -d yourdomain.com -d www.yourdomain.com
-      "
-
-volumes:
-  postgres_data:
+    restart: always
