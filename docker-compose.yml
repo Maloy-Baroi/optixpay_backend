@@ -25,34 +25,34 @@ services:
       POSTGRES_USER: optixpay
       POSTGRES_PASSWORD: optix_pay_123
       POSTGRES_DB: optix_db
+#
+#  nginx:
+#    image: nginx:latest
+#    container_name: nginx_proxy
+#    depends_on:
+#      - web
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx:/etc/nginx/conf.d
+#      - ./letsencrypt:/etc/letsencrypt
+#      - ./static:/static
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx_proxy
-    depends_on:
-      - web
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./letsencrypt:/etc/letsencrypt
-      - ./static:/static
+#  certbot:
+#    image: certbot/certbot
+#    container_name: certbot
+#    volumes:
+#      - ./letsencrypt:/etc/letsencrypt
+#      - ./nginx:/etc/nginx/conf.d
+#    entrypoint: >
+#      sh -c "
+#      certbot certonly --webroot -w /static/ -d optixpay.com -d www.optixpay.com
+#      "
 
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./letsencrypt:/etc/letsencrypt
-      - ./nginx:/etc/nginx/conf.d
-    entrypoint: >
-      sh -c "
-      certbot certonly --webroot -w /static/ -d optixpay.com -d www.optixpay.com
-      "
-
-networks:
-  optixpay_network:
-    driver: bridge
+#networks:
+#  optixpay_network:
+#    driver: bridge
 
 volumes:
   postgres_data:   # This defines the postgres_data volume
