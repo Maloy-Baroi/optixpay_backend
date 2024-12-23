@@ -24,9 +24,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: youruser
-      POSTGRES_PASSWORD: yourpassword
-      POSTGRES_DB: yourdb
+      POSTGRES_USER: optixpay
+      POSTGRES_PASSWORD: optix_pay_123
+      POSTGRES_DB: optix_db
 
   nginx:
     image: nginx:latest
@@ -49,8 +49,9 @@ services:
       - ./nginx:/etc/nginx/conf.d
     entrypoint: >
       sh -c "
-      certbot certonly --webroot -w /static/ -d yourdomain.com -d www.yourdomain.com
+      certbot certonly --webroot -w /static/ -d optixpay.com -d www.optixpay.com
       "
 
-volumes:
-  postgres_data:
+networks:
+  optixpay_network:
+    driver: bridge
