@@ -192,8 +192,6 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
-SECURE_SSL_REDIRECT = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # SWAGGER_SETTINGS = {
 #     'USE_SESSION_AUTH': False,  # Disable session-based authentication for Swagger
