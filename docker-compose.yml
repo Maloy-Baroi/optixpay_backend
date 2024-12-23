@@ -12,6 +12,7 @@ services:
       - DEBUG=1
     command: >
       sh -c "
+      python manage.py makemigrations &&
       python manage.py migrate &&
       gunicorn optixpay_backend.wsgi:application --bind 0.0.0.0:8000
       "
