@@ -24,4 +24,4 @@ RUN python manage.py migrate
 EXPOSE 8000
 
 # Start Gunicorn server
-CMD ["gunicorn", "optixpay_backend.wsgi:application", "--bind", "0.0.0.0:8000", "--ssl-keyfile", "/etc/letsencrypt/live/optixpay.com/privkey.pem", "--ssl-certfile", "/etc/letsencrypt/live/optixpay.com/fullchain.pem"]
+CMD ["gunicorn", "optixpay_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
