@@ -1,0 +1,38 @@
+[2024-12-24 10:55:16 +0000] [36373] [INFO] Starting gunicorn 23.0.0
+[2024-12-24 10:55:16 +0000] [36373] [INFO] Listening at: http://0.0.0.0:8000 (36373)
+[2024-12-24 10:55:16 +0000] [36373] [INFO] Using worker: sync
+[2024-12-24 10:55:16 +0000] [36374] [INFO] Booting worker with pid: 36374
+[2024-12-24 10:56:06 +0000] [36373] [CRITICAL] WORKER TIMEOUT (pid:36374)
+[2024-12-24 10:56:06 +0000] [36374] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+          ^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+           ^^^^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+        ^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/optixpay_backend/venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2024-12-24 10:56:06 +0000] [36374] [INFO] Worker exiting (pid: 36374)
+[2024-12-24 10:56:06 +0000] [36377] [INFO] Booting worker with pid: 36377
+[2024-12-24 12:04:44 +0000] [36373] [INFO] Handling signal: hup
+[2024-12-24 12:04:44 +0000] [36373] [INFO] Hang up: Master
+[2024-12-24 12:04:44 +0000] [38226] [INFO] Booting worker with pid: 38226
+[2024-12-24 12:04:44 +0000] [36373] [ERROR] Worker (pid:36377) was sent SIGHUP!

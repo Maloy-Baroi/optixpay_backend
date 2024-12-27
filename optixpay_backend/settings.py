@@ -20,7 +20,7 @@ SECRET_KEY = config('SECRET_KEY', None)
 DEBUG = config('DEBUG', 'True') == 'True'
 
 if not DEBUG:
-    ALLOWED_HOSTS = ['optixpay.com', 'www.optixpay.com', '46.202.159.210', 'localhost', '127.0.0.1']
+    ALLOWED_HOSTS = ['optixpay.com', 'www.optixpay.com', '46.202.159.210', 'localhost', '127.0.0.1','optixpay.britishmarketplace.co.uk','www.optixpay.britishmarketplace.co.uk']
 else:
     ALLOWED_HOSTS = []
 
