@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from app_deposit.models.deposit import Deposit
-from app_deposit.serializers.deposit import DepositSerializer
+from app_deposit.serializers.deposit import DepositSerializer, DepositListSerializer
 
 from app_profile.models.profile import Profile
 from services.pagination import CustomPagination
@@ -52,11 +52,11 @@ class DepositListAPIView(APIView):
 
         if page is not None:
             # Serialize page instead of entire queryset
-            serializer = DepositSerializer(page, many=True)
+            serializer = DepositListSerializer(page, many=True)
             return paginator.get_paginated_response(serializer.data)
 
         # If no page, meaning pagination failed or not needed, return all items
-        serializer = DepositSerializer(deposits, many=True)
+        serializer = DepositListSerializer(deposits, many=True)
         return Response({"message": "Data Found!", "data": serializer.data}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
