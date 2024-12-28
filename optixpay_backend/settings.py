@@ -95,7 +95,19 @@ if not DEBUG:
     #        'HOST': config('DB_HOST'),
     #        'PORT': config('DB_PORT', '5432'),
     #    }
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': 'optix_db',
+    #         'USER': 'optixpay',
+    #         'PASSWORD': 'optix_pay_123',
+    #         'HOST': '46.202.159.210',
+    #         'PORT': '5432',
+    #         'optional': {
+    #             "sslmode": "off",
+    #         }
+    #     }
     # }
+
     DATABASES = {
             'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -241,7 +253,7 @@ SIMPLE_JWT = {
 }
 
 EMAIL_HOST = 'smtp.hostinger.com'
-EMAIL_PORT = 587
+EMAIL_PORT = 465
 EMAIL_HOST_USER = 'no-reply@optixpay.com'
 EMAIL_HOST_PASSWORD = 'u3P#xEfPD!8PPLX'
 EMAIL_USE_TLS = True
