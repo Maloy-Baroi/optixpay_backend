@@ -2,6 +2,7 @@ import random
 from multiprocessing import Process
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, generics
@@ -89,7 +90,8 @@ class VerifyOTPView(APIView):
 
             if otp_provided == otp_cached.token:
                 user.is_active = True
-                # user.groups.add('agent')
+                agent_group, created = Group.objects.get_or_create(name='agent')  # Ensure the agent group exists
+                user.groups.add(agent_group)  # Add the user to the agent group
                 user.save()
                 return CommonResponse("success", {'message': 'Email verified successfully!'},
                                       status_code=status.HTTP_200_OK)
@@ -97,6 +99,8 @@ class VerifyOTPView(APIView):
 
         except Exception as e:
             return CommonResponse("error", {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+
+
 
 # Login
 class CustomTokenObtainPairView(TokenObtainPairView):
