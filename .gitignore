@@ -7,3 +7,5 @@ db.sqlite3
 media
 static
 profiles
+Dockerfile
+docker-compose.yml
