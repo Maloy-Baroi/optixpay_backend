@@ -253,11 +253,19 @@ SIMPLE_JWT = {
 }
 
 EMAIL_HOST = 'smtp.hostinger.com'
-EMAIL_PORT = 465
+EMAIL_PORT = 587
 EMAIL_HOST_USER = 'no-reply@optixpay.com'
 EMAIL_HOST_PASSWORD = 'u3P#xEfPD!8PPLX'
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = 'no-reply@optixpay.com'
+
+# EMAIL_HOST="smtp.gmail.com"
+# EMAIL_PORT=587
+# EMAIL_HOST_USER="supplychain.usbangla@gmail.com"
+# EMAIL_HOST_PASSWORD="qtykuvezcccmibyt"
+# EMAIL_USE_TLS=True
+# DEFAULT_FROM_EMAIL="crm@gmail.com"
 
 # MinIO server connection details
 MINIO_STORAGE_ENDPOINT = '147.79.66.187:9000'  # IP address and port of the MinIO server

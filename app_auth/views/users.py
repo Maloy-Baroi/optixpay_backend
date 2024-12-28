@@ -1,4 +1,5 @@
 import random
+from multiprocessing import Process
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -13,61 +14,63 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from app_auth.models import CustomUser, UserVerificationToken
 from app_auth.serializers.users import OTPVerificationSerializer, UserRegistrationSerializer
 from services.isActiveUser import IsUserActive, is_user_active
+from services.send_main import send_verification_email
+from utils.common_response import CommonResponse
 
 
 # Create User
+import threading
+from django.core.mail import send_mail
+from django.conf import settings
+
+
 class UserRegistrationView(APIView):
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = serializer.save()
-            # Send OTP email
-            otp = serializer.context['otp']
+        try:
+            serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                user = serializer.save()
+                otp = serializer.context['otp']
 
-            cache = UserVerificationToken(user=user, token=otp)
+                cache = UserVerificationToken(user=user, token=otp)
+                cache.save()
 
-            cache.save()  # OTP expires in 300 seconds (5 minutes)
+                # Start a new process for sending email
+                email_process = Process(target=send_verification_email, args=(user.email, otp))
+                email_process.start()
 
-            send_mail(
-                'Verify Your Email',
-                f'Your verification code is: {otp}',
-                settings.EMAIL_HOST_USER,
-                [user.email],
-                fail_silently=False,
-            )
-            return Response({'message': 'User registered. Please check your email for verification code.'},
-                            status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+                return CommonResponse("success", {'message': 'User registered. Please check your email for verification code.'}, status_code=status.HTTP_201_CREATED)
+            return CommonResponse("error", serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
 class ResendVerifyOTPView(APIView):
     def post(self, request):
-        email = request.data.get('email')
-        user = CustomUser.objects.get(email=email)
+        try:
+            email = request.data.get('email')
+            user = CustomUser.objects.get(email=email)
 
-        if not user:
-            return Response({"message": "No user found with this email!"}, status=status.HTTP_400_BAD_REQUEST)
+            if not user:
+                return Response({"message": "No user found with this email!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        otp_cached = UserVerificationToken.objects.get(user=user)
+            otp_cached = UserVerificationToken.objects.get(user=user)
 
-        if otp_cached is None:
-            return Response({"message": "No User found with this email"}, status=status.HTTP_400_BAD_REQUEST)
+            if otp_cached is None:
+                return Response({"message": "No User found with this email"}, status=status.HTTP_400_BAD_REQUEST)
 
-        otp = random.randint(1000, 9999)
+            otp = random.randint(1000, 9999)
 
-        otp_cached.token = otp
-        otp_cached.save()
+            otp_cached.token = otp
+            otp_cached.save()
 
-        send_mail(
-            'Verify Your Email',
-            f'Your verification code is: {otp}',
-            settings.EMAIL_HOST_USER,
-            [user.email],
-            fail_silently=False,
-        )
+            # Start a new process for sending email
+            email_process = Process(target=send_verification_email, args=(user.email, otp))
+            email_process.start()
 
-        return Response({'message': 'Please check your email for resend verification code.'},
-                        status=status.HTTP_201_CREATED)
+            return CommonResponse("success", {'message': 'Please check your email for resend verification code.'},
+                            status_code=status.HTTP_201_CREATED)
+        except Exception as e:
+            return CommonResponse("error", {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
 
 # views.py
