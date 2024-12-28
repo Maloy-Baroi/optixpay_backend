@@ -83,14 +83,14 @@ class VerifyOTPView(APIView):
         otp_cached = UserVerificationToken.objects.get(user=user)
 
         if otp_cached is None:
-            return Response({'error': 'OTP has expired or does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': 'OTP has expired or does not exist.'}, status_code=status.HTTP_400_BAD_REQUEST)
 
         if otp_provided == otp_cached.token:
             user.is_active = True
             user.groups.add('agent')
             user.save()
-            return Response({'message': 'Email verified successfully!'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("success", {'message': 'Email verified successfully!'}, status_code=status.HTTP_200_OK)
+        return CommonResponse("error", {'error': 'Invalid OTP'}, status_code=status.HTTP_400_BAD_REQUEST)
 
 
 # Login
@@ -102,7 +102,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         password = request.data.get('password')
 
         if not is_user_active(email):
-            return Response({"error": "User is not active."}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {"error": "User is not active."}, status=status.HTTP_400_BAD_REQUEST)
 
 
         try:
@@ -120,22 +120,22 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 permissions = user.user_permissions.all()
 
                 # permission_serializers = PermissionSerializer(permissions, many=True)
-                return Response({
+                return CommonResponse("success", {
                     'refresh': str(refresh),
                     'access': access_token,
                     'groups': groups,
                     'username': user.name
                     # 'permissions': permission_serializers
-                }, status=status.HTTP_200_OK)
+                }, status_code=status.HTTP_200_OK)
                 # If password is correct, proceed to issue the token
                 # return super().post(request, *args, **kwargs)
             else:
                 # If password is incorrect, return an error response
-                return Response({'detail': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
+                return CommonResponse("error", {'error': 'Invalid password'}, status_code=status.HTTP_401_UNAUTHORIZED)
 
         except CustomUser.DoesNotExist:
             # If the user does not exist, return an error response
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {'error': 'User not found'}, status_code=status.HTTP_404_NOT_FOUND)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -145,15 +145,15 @@ class CustomTokenRefreshView(TokenRefreshView):
         refresh_token = request.data.get('refresh')
 
         if refresh_token is None:
-            return Response({'detail': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': 'Refresh token is required'}, status_code=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
 
-            return Response({
+            return CommonResponse("success", {
                 'access': access_token,
-            }, status=status.HTTP_200_OK)
+            }, status_code=status.HTTP_200_OK)
 
         except TokenError as e:
-            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
