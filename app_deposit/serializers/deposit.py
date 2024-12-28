@@ -1,50 +1,28 @@
 from rest_framework import serializers
+
+from app_bank.serializers.bank import BankModelSerializer
 from app_deposit.models.deposit import Deposit
+from app_deposit.serializers.currency import CurrencySerializer
 from app_profile.models.profile import Profile
 from app_profile.serializers.profile import ProfileSerializer
 
 
 class DepositListSerializer(serializers.ModelSerializer):
-    merchant_details = serializers.SerializerMethodField()
-    bank_details = serializers.SerializerMethodField()
-    agent_name = serializers.SerializerMethodField()
-    requested_currency_details = serializers.SerializerMethodField()
-    sent_currency_details = serializers.SerializerMethodField()
-
+    merchant = ProfileSerializer(source='merchant_id', read_only=True)
+    bank = BankModelSerializer(read_only=True)
+    agent = ProfileSerializer(source='agent_id', read_only=True)
+    requested_currency = CurrencySerializer(read_only=True)
+    sent_currency = CurrencySerializer(read_only=True)
 
     class Meta:
         model = Deposit
         fields = [
-            'merchant_id',
-            'merchant_details',
-            'customer_id',
-            'bank',
-            # 'bank_details',
-            'agent_id',
-            # 'agent_name',
-            'order_id',
-            'oxp_id',
-            'txn_id',
-            'requested_amount',
-            'requested_currency',
-            'requested_currency_details',
-            'sent_amount',
-            'sent_currency',
-            'sent_currency_details',
-            'created_on',
-            'last_updated',
-            'sender_account',
-            'receiver_account',
-            'agent_commission',
-            'merchant_commission',
-            'status'
+            'merchant', 'customer_id', 'bank', 'agent', 'order_id',
+            'oxp_id', 'txn_id', 'requested_amount', 'requested_currency',
+            'sent_amount', 'sent_currency', 'created_on', 'last_updated',
+            'sender_account', 'receiver_account', 'agent_commission',
+            'merchant_commission', 'status'
         ]
-        read_only_fields = ['merchant_details', 'created_at', 'updated_at', 'created_by', 'updated_by']
-
-    def get_merchant_details(self, obj):
-        merchant = Profile.objects.get(id=obj.merchant_id)
-        merchant_profile_serializer = ProfileSerializer(merchant)
-        return merchant_profile_serializer.data
 
 
 class DepositSerializer(serializers.ModelSerializer):

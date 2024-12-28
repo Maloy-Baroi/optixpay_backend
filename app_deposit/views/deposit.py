@@ -24,7 +24,7 @@ class DepositListAPIView(APIView):
                 type=openapi.TYPE_STRING
             )
         ],
-        responses={200: DepositSerializer(many=True)}
+        responses={200: DepositListSerializer(many=True)}
     )
     def get(self, request):
         search_keyword = request.query_params.get('search_keyword', None)
