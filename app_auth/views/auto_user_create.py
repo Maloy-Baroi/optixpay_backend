@@ -23,7 +23,7 @@ class AutoCreateUserView(APIView):
 
         try:
             # Check if the group exists
-            group = Group.objects.get(name=group_name)
+            group, create = Group.objects.get_or_create(name=group_name)
         except Group.DoesNotExist:
             return CommonResponse("error", {"message": "Group not found."}, status_code=status.HTTP_404_NOT_FOUND)
 
