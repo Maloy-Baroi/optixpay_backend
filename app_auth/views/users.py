@@ -89,7 +89,7 @@ class VerifyOTPView(APIView):
 
             if otp_provided == otp_cached.token:
                 user.is_active = True
-                user.groups.add('agent')
+                # user.groups.add('agent')
                 user.save()
                 return CommonResponse("success", {'message': 'Email verified successfully!'},
                                       status_code=status.HTTP_200_OK)
