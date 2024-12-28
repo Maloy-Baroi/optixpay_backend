@@ -87,6 +87,7 @@ class VerifyOTPView(APIView):
 
         if otp_provided == otp_cached.token:
             user.is_active = True
+            user.groups.add('agent')
             user.save()
             return Response({'message': 'Email verified successfully!'}, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
