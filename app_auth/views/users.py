@@ -76,22 +76,27 @@ class ResendVerifyOTPView(APIView):
 # views.py
 class VerifyOTPView(APIView):
     def post(self, request):
-        email = str(request.data.get('email'))
-        otp_provided = int(request.data.get('otp'))
-        user = CustomUser.objects.get(email=email)
+        try:
+            email = str(request.data.get('email'))
+            otp_provided = int(request.data.get('otp'))
+            user = CustomUser.objects.get(email=email)
 
-        otp_cached = UserVerificationToken.objects.get(user=user)
+            otp_cached = UserVerificationToken.objects.get(user=user)
 
-        if otp_cached is None:
-            return CommonResponse("error", {'error': 'OTP has expired or does not exist.'}, status_code=status.HTTP_400_BAD_REQUEST)
+            if otp_cached is None:
+                return CommonResponse("error", {'error': 'OTP has expired or does not exist.'},
+                                      status_code=status.HTTP_400_BAD_REQUEST)
 
-        if otp_provided == otp_cached.token:
-            user.is_active = True
-            user.groups.add('agent')
-            user.save()
-            return CommonResponse("success", {'message': 'Email verified successfully!'}, status_code=status.HTTP_200_OK)
-        return CommonResponse("error", {'error': 'Invalid OTP'}, status_code=status.HTTP_400_BAD_REQUEST)
+            if otp_provided == otp_cached.token:
+                user.is_active = True
+                user.groups.add('agent')
+                user.save()
+                return CommonResponse("success", {'message': 'Email verified successfully!'},
+                                      status_code=status.HTTP_200_OK)
+            return CommonResponse("error", {'error': 'Invalid OTP'}, status_code=status.HTTP_400_BAD_REQUEST)
 
+        except Exception as e:
+            return CommonResponse("error", {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
 # Login
 class CustomTokenObtainPairView(TokenObtainPairView):
