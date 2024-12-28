@@ -5,6 +5,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
+from app_auth.views.auto_user_create import AutoCreateUserView
 from optixpay_backend import settings
 
 schema_view = get_schema_view(
@@ -32,6 +33,7 @@ urlpatterns = [
     path('api/v1/app-withdraw/', include('app_withdraw.urls')),
     path('api/v1/app-bank/', include('app_bank.urls')),
     path('api/v1/auth/', include('rest_framework.urls')),
+    path('auto-user-create/', AutoCreateUserView.as_view(), name='auto-user-create'),
 ]
 
 if settings.DEBUG:
