@@ -57,29 +57,19 @@ class SendOTPView(APIView):
         except Exception as e:
             return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
 
-class ResetPasswordView(APIView):
+
+class VerifyOTPAPIVIew(APIView):
     def post(self, request):
         try:
             email = request.data.get('email')
             otp = request.data.get('otp')
-            new_password = request.data.get('new_password')
-            confirm_password = request.data.get('confirm_password')
 
-            if new_password != confirm_password:
-                return CommonResponse("error", {'error': 'Passwords do not match'},
-                                      status_code=status.HTTP_400_BAD_REQUEST)
-
-            if email and otp and new_password:
+            if email and otp:
                 user = CustomUser.objects.get(email=email)
 
                 otp_cached = UserVerificationToken.objects.get(user=user)
                 if user and int(otp) == otp_cached.token:  # Validate OTP
-                    # Reset password
-                    user.set_password(new_password)
-                    user.profile.otp = None  # Clear the OTP
-                    user.save()
-                    user.profile.save()
-                    return CommonResponse("success", {'message': 'Password has been reset successfully'},
+                    return CommonResponse("success", {'message': 'OTP Verified!'},
                                           status_code=status.HTTP_200_OK)
                 return CommonResponse("error", {'error': 'Invalid OTP or email'},
                                       status_code=status.HTTP_400_BAD_REQUEST)
@@ -87,3 +77,32 @@ class ResetPasswordView(APIView):
                                   status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not email or not new_password or not confirm_password:
+            return CommonResponse("error", {'error': 'All fields are required'},
+                                  status_code=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return CommonResponse("error", {'error': 'Passwords do not match'},
+                                  status_code=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(email=email)  # Retrieve the user
+            if user:  # Check if user exists
+                user.set_password(new_password)  # Securely hash and set new password
+                user.save()  # Save the user object to update the password in the database
+                return CommonResponse("success", {'message': 'Password reset successfully!'},
+                                      status_code=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return CommonResponse("error", {'error': 'User does not exist'},
+                                  status_code=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return CommonResponse("error", {'error': str(e)},
+                                  status_code=status.HTTP_400_BAD_REQUEST)
