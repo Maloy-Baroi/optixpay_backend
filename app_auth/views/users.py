@@ -12,6 +12,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from app_auth.models import CustomUser, UserVerificationToken
 from app_auth.serializers.users import OTPVerificationSerializer, UserRegistrationSerializer
+from services.isActiveUser import IsUserActive, is_user_active
 
 
 # Create User
@@ -95,6 +96,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
+
+        if not is_user_active(email):
+            return Response({"error": "User is not active."}, status=status.HTTP_400_BAD_REQUEST)
+
 
         try:
             # Retrieve user by email

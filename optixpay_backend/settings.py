@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
     'corsheaders',
-    'simple_history'
+    'simple_history',
+    'django_extensions'
 ]
 
 AUTH_USER_MODEL = 'app_auth.CustomUser'
