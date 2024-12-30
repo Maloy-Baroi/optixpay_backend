@@ -16,7 +16,7 @@ class AutoCreateUserView(APIView):
 
         if not all([email, username, password, group_name]):
             return CommonResponse("error", {"message": "All fields are required."},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Check if the group exists or create a new one
@@ -32,11 +32,11 @@ class AutoCreateUserView(APIView):
 
             # Serialize the user object
             data = CustomUserSerializer(user).data
-            return CommonResponse("success", data=data, status_code=status.HTTP_201_CREATED)
+            return CommonResponse("success", data=data, status=status.HTTP_201_CREATED)
 
         except IntegrityError:
             return CommonResponse("error", {"message": "A user with that email or username already exists."},
-                                  status_code=status.HTTP_409_CONFLICT)
+                                  status=status.HTTP_409_CONFLICT)
         except Exception as e:
             # Handle unexpected exceptions
-            return CommonResponse("error", {"message": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

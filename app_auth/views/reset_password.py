@@ -25,13 +25,13 @@ class SendOTPView(APIView):
                     # Store OTP in a way you can validate it later; here it's simplified
                     if not user:
                         return CommonResponse("error", {"message": "No user found with this email!"},
-                                              status_code=status.HTTP_400_BAD_REQUEST)
+                                              status=status.HTTP_400_BAD_REQUEST)
 
                     otp_cached = UserVerificationToken.objects.get(user=user)
 
                     if otp_cached is None:
                         return CommonResponse("error", {"message": "No User found with this email"},
-                                              status_code=status.HTTP_400_BAD_REQUEST)
+                                              status=status.HTTP_400_BAD_REQUEST)
 
                     otp = random.randint(1000, 9999)
 
@@ -49,13 +49,13 @@ class SendOTPView(APIView):
                     # Start a new process for sending email
                     email_process = Process(target=send_verification_email, args=(user.email, otp))
                     email_process.start()
-                    return CommonResponse("success", {'message': 'OTP sent to email'}, status_code=status.HTTP_200_OK)
+                    return CommonResponse("success", {'message': 'OTP sent to email'}, status=status.HTTP_200_OK)
                 return CommonResponse("error", {'error': 'User with this email does not exist'},
-                                      status_code=status.HTTP_404_NOT_FOUND)
+                                      status=status.HTTP_404_NOT_FOUND)
             return CommonResponse("error", {'error': 'Email field is required'},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyOTPAPIVIew(APIView):
@@ -70,13 +70,13 @@ class VerifyOTPAPIVIew(APIView):
                 otp_cached = UserVerificationToken.objects.get(user=user)
                 if user and int(otp) == otp_cached.token:  # Validate OTP
                     return CommonResponse("success", {'message': 'OTP Verified!'},
-                                          status_code=status.HTTP_200_OK)
+                                          status=status.HTTP_200_OK)
                 return CommonResponse("error", {'error': 'Invalid OTP or email'},
-                                      status_code=status.HTTP_400_BAD_REQUEST)
+                                      status=status.HTTP_400_BAD_REQUEST)
             return CommonResponse("error", {'error': 'All fields are required'},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResetPasswordAPIView(APIView):
@@ -87,11 +87,11 @@ class ResetPasswordAPIView(APIView):
 
         if not email or not new_password or not confirm_password:
             return CommonResponse("error", {'error': 'All fields are required'},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)
 
         if new_password != confirm_password:
             return CommonResponse("error", {'error': 'Passwords do not match'},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = CustomUser.objects.get(email=email)  # Retrieve the user
@@ -99,10 +99,10 @@ class ResetPasswordAPIView(APIView):
                 user.set_password(new_password)  # Securely hash and set new password
                 user.save()  # Save the user object to update the password in the database
                 return CommonResponse("success", {'message': 'Password reset successfully!'},
-                                      status_code=status.HTTP_200_OK)
+                                      status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
             return CommonResponse("error", {'error': 'User does not exist'},
-                                  status_code=status.HTTP_404_NOT_FOUND)
+                                  status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return CommonResponse("error", {'error': str(e)},
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+                                  status=status.HTTP_400_BAD_REQUEST)

@@ -1,7 +1,9 @@
+from locale import currency
+
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
-from app_profile.models.profile import Profile
+from app_profile.models.agent import AgentProfile
 from core.models.BaseModel import BaseModel
 
 import uuid
@@ -31,11 +33,16 @@ class BankTypeModel(BaseModel):
         ]
 
 
-class BankModel(BaseModel):
+class AgentBankModel(BaseModel):
+    # Username
     bank_unique_id = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the bank")
+    # Business Name
     bank_name = models.CharField(max_length=100, help_text="Name of the bank")
+    currency = models.ForeignKey('app_deposit.Currency', on_delete=models.SET_NULL, null=True, blank=True)
+    # Bank
     bank_type = models.ForeignKey(BankTypeModel, on_delete=models.CASCADE, related_name="banks", help_text="Type of the bank")
-    agent = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="banks_agent", help_text="Agent linked to the bank")
+    # Agent
+    agent = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name="banks_agent", help_text="Agent linked to the bank")
     account_number = models.CharField(
         max_length=15,
         validators=[RegexValidator(r'^\+880\d{9,10}$', message="Account number must start with +880 and contain 9-10 digits")],
@@ -77,14 +84,16 @@ class BankModel(BaseModel):
         default=0.0,
         help_text="Monthly usage so far"
     )
+    # App Key
     app_key = models.CharField(max_length=255, help_text="API key for the application")
+    # Secret Key
     secret_key = models.CharField(max_length=255, help_text="Secret key for the application")
 
     def __str__(self):
         return self.bank_name
 
     class Meta:
-        db_table = "bank"
+        db_table = "agent_bank"
         verbose_name = "Bank"
         verbose_name_plural = "Banks"
 
@@ -105,7 +114,6 @@ class BankModel(BaseModel):
     def save(self, *args, **kwargs):
         """Override save to automatically generate bank_unique_id before saving the instance."""
         if not self.bank_unique_id:
-            self.bank_unique_id = str(uuid.uuid4())  # Generate a unique UUID as the bank_unique_id
-            self.created_by_id = self.agent.id  # Generate a unique UUID as the bank_unique_id
-            self.updated_by_id = self.agent.id  # Generate a unique UUID as the bank_unique_id
-        super().save(*args, **kwargs)
+            self.bank_unique_id = str(uuid.uuid4())
+        # Ensure that self.created_by_id and self.updated_by_id are managed if needed
+        super(AgentBankModel, self).save(*args, **kwargs)

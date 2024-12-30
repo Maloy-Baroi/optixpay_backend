@@ -40,10 +40,10 @@ class UserRegistrationView(APIView):
                 email_process = Process(target=send_verification_email, args=(user.email, otp))
                 email_process.start()
 
-                return CommonResponse("success", {'message': 'User registered. Please check your email for verification code.'}, status_code=status.HTTP_201_CREATED)
-            return CommonResponse("error", serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)
+                return CommonResponse("success", {'message': 'User registered. Please check your email for verification code.'}, status=status.HTTP_201_CREATED)
+            return CommonResponse("error", serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return CommonResponse("error", {'error': str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class ResendVerifyOTPView(APIView):
     def post(self, request):
@@ -69,9 +69,9 @@ class ResendVerifyOTPView(APIView):
             email_process.start()
 
             return CommonResponse("success", {'message': 'Please check your email for resend verification code.'},
-                            status_code=status.HTTP_201_CREATED)
+                            status=status.HTTP_201_CREATED)
         except Exception as e:
-            return CommonResponse("error", {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # views.py
@@ -86,7 +86,7 @@ class VerifyOTPView(APIView):
 
             if otp_cached is None:
                 return CommonResponse("error", {'error': 'OTP has expired or does not exist.'},
-                                      status_code=status.HTTP_400_BAD_REQUEST)
+                                      status=status.HTTP_400_BAD_REQUEST)
 
             if otp_provided == otp_cached.token:
                 user.is_active = True
@@ -94,11 +94,11 @@ class VerifyOTPView(APIView):
                 user.groups.add(agent_group)  # Add the user to the agent group
                 user.save()
                 return CommonResponse("success", {'message': 'Email verified successfully!'},
-                                      status_code=status.HTTP_200_OK)
-            return CommonResponse("error", {'error': 'Invalid OTP'}, status_code=status.HTTP_400_BAD_REQUEST)
+                                      status=status.HTTP_200_OK)
+            return CommonResponse("error", {'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return CommonResponse("error", {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -135,16 +135,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                     'groups': groups,
                     'username': user.name
                     # 'permissions': permission_serializers
-                }, status_code=status.HTTP_200_OK)
+                }, status=status.HTTP_200_OK)
                 # If password is correct, proceed to issue the token
                 # return super().post(request, *args, **kwargs)
             else:
                 # If password is incorrect, return an error response
-                return CommonResponse("error", {'error': 'Invalid password'}, status_code=status.HTTP_401_UNAUTHORIZED)
+                return CommonResponse("error", {'error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
 
         except CustomUser.DoesNotExist:
             # If the user does not exist, return an error response
-            return CommonResponse("error", {'error': 'User not found'}, status_code=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -154,7 +154,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         refresh_token = request.data.get('refresh')
 
         if refresh_token is None:
-            return CommonResponse("error", {'error': 'Refresh token is required'}, status_code=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
@@ -162,7 +162,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
             return CommonResponse("success", {
                 'access': access_token,
-            }, status_code=status.HTTP_200_OK)
+            }, status=status.HTTP_200_OK)
 
         except TokenError as e:
             return CommonResponse("error", {'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

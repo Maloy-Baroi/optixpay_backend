@@ -1,3 +1,6 @@
+import hashlib
+import uuid
+
 from django.core.validators import RegexValidator, FileExtensionValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -9,6 +12,13 @@ from core.models.BaseModel import BaseModel
 
 def upload_to(instance, filename):
     return f'profiles/{instance.full_name}/{filename}'
+
+def generate_short_uuid():
+    """Generates a 10-character unique key using a UUID and hashing."""
+    uuid_str = str(uuid.uuid4())
+    hash_object = hashlib.sha256(uuid_str.encode())
+    hex_digest = hash_object.hexdigest()
+    return hex_digest[:10]
 
 class Profile(BaseModel):
     # Choices for document type
@@ -32,10 +42,19 @@ class Profile(BaseModel):
         ('Admin', 'Admin'),
         ('Merchant', 'Merchant'),
         ('Agent', 'Agent'),
+        ('Staff', 'Staff'),
+    ]
+
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Active', 'Active'),
+        ('Rejected', 'Rejected'),
+        ('Hold', 'Hold'),
     ]
 
     # Fields
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    unique_id = models.CharField(max_length=100, unique=True, default=f"agent_{generate_short_uuid()}")
     profile_type = models.CharField(max_length=20, choices=PROFILE_CHOICES, verbose_name="Profile_type",default='Agent')
     full_name = models.CharField(max_length=255, verbose_name="Full Name")
     country = models.CharField(max_length=25, choices=COUNTRY_CHOICES, verbose_name="Country")
@@ -74,6 +93,8 @@ class Profile(BaseModel):
         verbose_name="Selfie with ID/Passport"
     )
 
+    status = models.CharField(max_length=20, verbose_name="Status", choices=STATUS_CHOICES, default='Pending')
+
     # Methods for file names and other utilities
     def get_full_document_path(self):
         """Returns all file paths."""
@@ -91,9 +112,28 @@ class Profile(BaseModel):
         verbose_name_plural = "Profiles"
         ordering = ['-created_at']
 
-# Signal for post-save actions
-# @receiver(post_save, sender=Profile)
-# def post_save_profile(sender, instance, created, **kwargs):
-#     if created:
-#         # Add custom logic here, like sending a notification
-#         print(f"Profile created for {instance.full_name}.")
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to generate unique_id based on profile_type.
+        """
+        if not self.id:  # Check if it's a new instance (not an update)
+            # Generate a random unique ID based on profile_type
+            random_unique_id = generate_short_uuid()
+            self.unique_id = f"{self.get_profile_type_prefix()}_{random_unique_id}"
+
+        super().save(*args, **kwargs)  # Call the original save method
+
+    def get_profile_type_prefix(self):
+        """
+        Helper function to get the prefix for unique_id based on profile_type.
+        """
+        if self.profile_type == 'Agent':
+            return "agent"
+        elif self.profile_type == 'Merchant':
+            return "merchant"
+        elif self.profile_type == 'Admin':
+            return "admin"
+        elif self.profile_type == 'Staff':
+            return "staff"
+        else:
+            return ""  # Handle unexpected profile_type

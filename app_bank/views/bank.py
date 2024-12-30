@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from app_bank.models.bank import BankModel
+from app_bank.models.bank import AgentBankModel
 from app_bank.serializers.bank import BankModelSerializer
 from rest_framework.exceptions import NotFound
 

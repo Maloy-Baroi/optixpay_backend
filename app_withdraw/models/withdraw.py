@@ -1,6 +1,6 @@
 from django.db import models
 from app_profile.models.profile import Profile
-from app_bank.models.bank import BankModel, BankTypeModel
+from app_bank.models.bank import AgentBankModel, BankTypeModel
 from app_deposit.models.deposit import Currency
 from core.models.BaseModel import BaseModel
 
@@ -10,7 +10,7 @@ class Withdraw(BaseModel):
     # Foreign Key relationships
     merchant_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='merchant_withdraw')
     customer_id = models.CharField(max_length=255)
-    bank = models.ForeignKey(BankModel, on_delete=models.CASCADE, related_name='bank_withdraw')
+    bank = models.ForeignKey(AgentBankModel, on_delete=models.CASCADE, related_name='bank_withdraw')
     # bank_type = models.ForeignKey(BankTypeModel, on_delete=models.CASCADE, related_name='bank_type_withdraw')
     agent_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='agent_withdraw', null=True, blank=True)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_withdraw',null=True, blank=True)

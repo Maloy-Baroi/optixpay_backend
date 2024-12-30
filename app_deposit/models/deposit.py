@@ -1,7 +1,7 @@
 from django.db import models
-from app_profile.models.profile import Profile
-from app_bank.models.bank import BankModel
 
+from app_bank.models.bank import AgentBankModel
+from app_profile.models.profile import Profile
 import uuid
 
 from core.models.BaseModel import BaseModel
@@ -26,7 +26,7 @@ class Deposit(BaseModel):
     # Foreign Key relationships
     merchant_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='merchant_deposits')
     customer_id = models.CharField(max_length=255)
-    bank = models.ForeignKey(BankModel, on_delete=models.CASCADE, related_name='bank_deposits')
+    bank = models.ForeignKey(AgentBankModel, on_delete=models.CASCADE, related_name='bank_deposits')
     agent_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='agent_deposits')
 
     # Fields

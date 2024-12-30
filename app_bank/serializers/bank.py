@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from app_bank.models.bank import BankModel
+from app_bank.models.bank import AgentBankModel
 import uuid
 
 class BankModelSerializer(serializers.ModelSerializer):
     # Set agent to the current user automatically
     class Meta:
-        model = BankModel
+        model = AgentBankModel
         fields = [
             'id', 'bank_unique_id', 'bank_name', 'bank_type', 'agent',
             'account_number', 'minimum_amount', 'maximum_amount', 'daily_limit',
