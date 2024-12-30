@@ -14,6 +14,32 @@ from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
 
+class MerchantListAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        try:
+            merchant_id = request.query_params.get('merchant_id')
+            search_query = request.query_params.get('search_query')
+            if merchant_id:
+                merchants = MerchantProfile.objects.filter(id=merchant_id)
+                merchants_serializers = MerchantProfileSerializer(merchants, many=True)
+                return CommonResponse("success", merchants_serializers.data, status.HTTP_200_OK)
+            elif search_query:
+                agents = MerchantProfile.objects.filter(
+                    Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
+                )
+                agents_serializer = MerchantProfileSerializer(agents, many=True)
+                return CommonResponse("success", agents_serializer.data, status.HTTP_200_OK)
+            else:
+                agents = MerchantProfile.objects.all()
+                agents_serializer = MerchantProfileSerializer(agents, many=True)
+                return CommonResponse("success", agents_serializer.data, status.HTTP_200_OK)
+        except MerchantProfile.DoesNotExist:
+            return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return CommonResponse("error", str(e), status.HTTP_400_BAD_REQUEST, "Agent data couldn't be retrieved")
+
 class MerchantProfileCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

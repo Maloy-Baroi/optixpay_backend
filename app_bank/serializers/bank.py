@@ -7,7 +7,7 @@ class BankModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentBankModel
         fields = [
-            'id', 'bank_unique_id', 'bank_name', 'bank_type', 'agent',
+            'id', 'master_username', 'master_password', 'bank_unique_id', 'bank_name', 'bank_type', 'agent',
             'account_number', 'minimum_amount', 'maximum_amount', 'daily_limit',
             'daily_usage', 'monthly_limit', 'monthly_usage', 'app_key', 'secret_key', 'is_active'
         ]

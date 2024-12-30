@@ -110,11 +110,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        if not is_user_active(email):
-            return CommonResponse("error", {"error": "User is not active."}, status=status.HTTP_400_BAD_REQUEST)
-
-
         try:
+            if not is_user_active(email):
+                return CommonResponse("error", {"error": "User is not active."}, status=status.HTTP_400_BAD_REQUEST)
+
             # Retrieve user by email
             user = CustomUser.objects.get(email=email)
 
@@ -153,10 +152,11 @@ class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get('refresh')
 
-        if refresh_token is None:
-            return CommonResponse("error", {'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
+            if refresh_token is None:
+                return CommonResponse("error", {'error': 'Refresh token is required'},
+                                      status=status.HTTP_400_BAD_REQUEST)
+
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
 

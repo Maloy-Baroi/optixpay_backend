@@ -35,6 +35,8 @@ class BankTypeModel(BaseModel):
 
 class AgentBankModel(BaseModel):
     # Username
+    master_username = models.CharField(max_length=50, help_text="Master username", null=True, blank=True)
+    master_password = models.CharField(max_length=50, help_text="Master password", null=True, blank=True)
     bank_unique_id = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the bank")
     # Business Name
     bank_name = models.CharField(max_length=100, help_text="Name of the bank")
@@ -48,38 +50,32 @@ class AgentBankModel(BaseModel):
         validators=[RegexValidator(r'^\+880\d{9,10}$', message="Account number must start with +880 and contain 9-10 digits")],
         help_text="Account number in the format +880XXXXXXXXX"
     )
-    minimum_amount = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    minimum_amount = models.FloatField(
         validators=[MinValueValidator(1.00)],
         default=1.00,
         help_text="Minimum amount allowed"
     )
-    maximum_amount = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    maximum_amount = models.FloatField(
         validators=[MinValueValidator(1.00), MaxValueValidator(25000.00)],
         default=25000.00,
         help_text="Maximum amount allowed"
     )
-    daily_limit = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    daily_limit = models.FloatField(
         validators=[MinValueValidator(0.0)],
         default=0.0,
         help_text="Daily transaction limit"
     )
-    daily_usage = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    daily_usage = models.FloatField(
         validators=[MinValueValidator(0.0)],
         default=0.0,
         help_text="Daily usage so far"
     )
-    monthly_limit = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    monthly_limit = models.FloatField(
         validators=[MinValueValidator(0.0)],
         default=0.0,
         help_text="Monthly transaction limit"
     )
-    monthly_usage = models.DecimalField(
-        max_digits=10, decimal_places=2,
+    monthly_usage = models.FloatField(
         validators=[MinValueValidator(0.0)],
         default=0.0,
         help_text="Monthly usage so far"

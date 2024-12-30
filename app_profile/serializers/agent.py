@@ -38,7 +38,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
 
     def get_bank_details(self, obj):
         try:
-            bank = AgentBankModel.objects.get(agent=obj.id)
+            bank = AgentBankModel.objects.filter(agent=obj)
             bank_serializers = BankModelSerializer(bank, many=True)
             return bank_serializers.data
         except AgentBankModel.DoesNotExist:

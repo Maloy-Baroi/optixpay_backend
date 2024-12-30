@@ -8,7 +8,7 @@ from core.models.BaseModel import BaseModel
 class AgentWallet(BaseModel):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    balance = models.DecimalField(max_digits=10, decimal_places=2)
+    balance = models.FloatField(default=0)
     payment_method = models.CharField(max_length=20)
 
 
