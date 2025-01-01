@@ -5,20 +5,20 @@ from app_deposit.models.deposit import Currency
 from core.models.BaseModel import BaseModel
 
 
-# class CurrencyConvertion(BaseModel):
-#     base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-#     to_currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-#     base_currency_amount = models.DecimalField(max_digits=8, decimal_places=2)
-#     to_currency_amount = models.DecimalField(max_digits=8, decimal_places=2)
-#
-#     class Meta:
-#         db_table = 'currency'
+class CurrencyConvertion(BaseModel):
+    base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='base_conversions')
+    to_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='to_conversions')
+    base_currency_amount = models.FloatField(default=0)
+    to_currency_amount = models.FloatField(default=0)
+
+    class Meta:
+        db_table = 'currency_conversion'
 
 
 class MerchantWallet(BaseModel):
     bank = models.ForeignKey(BankTypeModel, on_delete=models.CASCADE)
     balance = models.FloatField(default=0)
-    # currency_conversion = models.ManyToManyField(CurrencyConvertion, related_name='merchant_wallet', blank=True)
+    currency_conversion = models.ManyToManyField(CurrencyConvertion, related_name='merchant_wallet', blank=True)
 
 
     class Meta:

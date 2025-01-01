@@ -8,6 +8,7 @@ from app_deposit.models.deposit import Currency
 # from app_deposit.serializers.deposit import DepositSerializer
 from app_deposit.serializers.currency import CurrencySerializer
 from services.pagination import CustomPagination
+from utils.common_response import CommonResponse
 
 
 class CurrencyListPostAPIView(APIView):
@@ -20,17 +21,17 @@ class CurrencyListPostAPIView(APIView):
             paginator = self.pagination_class()
             result_page = paginator.paginate_queryset(queryset, request)
             serializer = CurrencySerializer(result_page, many=True)
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully fetched all currencies")
         except Currency.DoesNotExist:
-            return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
 
     def post(self, request):
         serializer = CurrencySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(created_by=request.user, updated_by=request.user)
-            return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
+            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully created new currency")
         else:
-            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
 
 
@@ -41,32 +42,32 @@ class CurrencyAPIView(APIView):
             try:
                 currency = Currency.objects.get(pk=pk)
                 serializer = CurrencySerializer(currency)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully fetched currency")
             except Currency.DoesNotExist:
-                return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
         else:
             currency = Currency.objects.all()
             serializer = CurrencySerializer(currency, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully fetched currency")
 
     def put(self, request, pk=None):
         try:
             currency = Currency.objects.get(pk=pk)
             if not currency:
-                return Response({"error": "Currency not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", status.HTTP_404_NOT_FOUND, "Currency not found")
             serializer = CurrencySerializer(currency, data=request.data,context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully updated currency")
+            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Currency.DoesNotExist:
-            return Response({"error": "Currency not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")
 
 
     def delete(self, request, pk=None):
         try:
             currency = Currency.objects.get(pk=pk)
             currency.delete()
-            return Response({"message": "Currency deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Currency deleted successfully")
         except Currency.DoesNotExist:
-            return Response({"error": "Currency not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")

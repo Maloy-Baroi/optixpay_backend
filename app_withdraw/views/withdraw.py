@@ -9,56 +9,9 @@ from app_deposit.serializers.deposit import DepositSerializer
 from app_withdraw.serializers.withdraw import WithdrawSerializer
 
 from app_profile.models.profile import Profile
-
-
-
-# class WithdrawAPIView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
-#     def get(self, request, pk=None):
-#         if pk:
-#             try:
-#                 withdraw = Withdraw.objects.get(pk=pk)
-#                 serializer = WithdrawSerializer(withdraw)
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             except Withdraw.DoesNotExist:
-#                 return Response({"error": "Withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
-#         else:
-#             withdraw = Withdraw.objects.all()
-#             serializer = WithdrawSerializer(withdraw, many=True)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     def post(self, request):
-#         serializer = WithdrawSerializer(data=request.data)
-#         profile = Profile.objects.filter(user=request.user).first()
-#         if serializer.is_valid():
-#             serializer.save(merchant=profile)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def put(self, request, pk=None):
-#         try:
-#             withdraw = Withdraw.objects.get(pk=pk)
-#             serializer = WithdrawSerializer(withdraw, data=request.data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         except Withdraw.DoesNotExist:
-#             return Response({"error": "withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#     def delete(self, request, pk=None):
-#         try:
-#             withdraw = Withdraw.objects.get(pk=pk)
-#             withdraw.delete()
-#             return Response({"message": "withdraw deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-#         except Withdraw.DoesNotExist:
-#             return Response({"error": "withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
-
-
-
 from django.db.models import Q
 from services.pagination import CustomPagination
-
+from utils.common_response import CommonResponse
 
 
 class WithdrawListAPIView(APIView):
@@ -95,7 +48,7 @@ class WithdrawListAPIView(APIView):
 
         # If no page, meaning pagination failed or not needed, return all items
         serializer = WithdrawSerializer(withdraws, many=True)
-        return Response({"message": "Data Found!", "data": serializer.data}, status=status.HTTP_200_OK)
+        return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
 
     def post(self, request):
         pass
@@ -108,30 +61,30 @@ class WithdrawAPIView(APIView):
             try:
                 withdraw = Withdraw.objects.get(pk=pk)
                 serializer = WithdrawSerializer(withdraw)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
             except Withdraw.DoesNotExist:
-                return Response({"error": "Withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
         else:
-            return Response({"error": "Data Not Found!"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error",{}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
 
     def put(self, request, pk=None):
         try:
             withdraw = Withdraw.objects.get(pk=pk)
             if not withdraw:
-                return Response({"error": "withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error",{}, status.HTTP_404_NOT_FOUND, "withdraw not found")
             serializer = WithdrawSerializer(withdraw, data=request.data,context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Data Successfully!")
+            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Withdraw.DoesNotExist:
-            return Response({"error": "Withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
 
 
     def delete(self, request, pk=None):
         try:
             withdraw = Withdraw.objects.get(pk=pk)
             withdraw.soft_delete()
-            return Response({"message": "Withdraw deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Withdraw deleted successfully")
         except Withdraw.DoesNotExist:
-            return Response({"error": "Withdraw not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")

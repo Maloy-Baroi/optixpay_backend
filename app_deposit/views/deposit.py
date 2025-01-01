@@ -9,6 +9,7 @@ from app_deposit.serializers.deposit import DepositSerializer, DepositListSerial
 
 from app_profile.models.profile import Profile
 from services.pagination import CustomPagination
+from utils.common_response import CommonResponse
 
 
 class DepositListAPIView(APIView):
@@ -57,7 +58,7 @@ class DepositListAPIView(APIView):
 
         # If no page, meaning pagination failed or not needed, return all items
         serializer = DepositListSerializer(deposits, many=True)
-        return Response({"message": "Data Found!", "data": serializer.data}, status=status.HTTP_200_OK)
+        return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
 
     @swagger_auto_schema(
         operation_description="Create a new deposit",
@@ -75,13 +76,10 @@ class DepositListAPIView(APIView):
             deposit = serializer.save(created_by=request.user, updated_by=request.user)
 
             # Return a response
-            return Response({
-                "message": "Deposit created successfully.",
-                "data": serializer.data
-            }, status=status.HTTP_201_CREATED)
+            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")
 
         # Return validation errors
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
 
 class DepositAPIView(APIView):
@@ -91,30 +89,30 @@ class DepositAPIView(APIView):
             try:
                 deposit = Deposit.objects.get(pk=pk)
                 serializer = DepositSerializer(deposit)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
             except Deposit.DoesNotExist:
-                return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
         else:
-            return Response({"error": "Data Not Found!"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
 
     def put(self, request, pk=None):
         try:
             deposit = Deposit.objects.get(pk=pk)
             if not deposit:
-                return Response({"error": "deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "deposit not found")
             serializer = DepositSerializer(deposit, data=request.data,context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Updated")
+            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Deposit.DoesNotExist:
-            return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
 
 
     def delete(self, request, pk=None):
         try:
             deposit = Deposit.objects.get(pk=pk)
             deposit.soft_delete()
-            return Response({"message": "Deposit deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deposit deleted successfully")
         except Deposit.DoesNotExist:
-            return Response({"error": "Deposit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")

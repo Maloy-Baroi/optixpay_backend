@@ -72,13 +72,13 @@ class AgentProfileUpdateAPIView(APIView):
         try:
             agent = AgentProfile.objects.get(pk=pk)
         except AgentProfile.DoesNotExist:
-            return Response({'message': 'AgentProfile not found'}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "AgentProfile not found")
 
         serializer = AgentProfileSerializer(agent, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully Updated")
+        return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
 
 class AgentProfileDeleteAPIView(APIView):
@@ -86,7 +86,7 @@ class AgentProfileDeleteAPIView(APIView):
         try:
             agent = AgentProfile.objects.get(pk=pk)
         except AgentProfile.DoesNotExist:
-            return Response({'message': 'AgentProfile not found'}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'AgentProfile not found!')
 
         agent.soft_delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Content Not Found!")

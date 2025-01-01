@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from app_bank.models.bank import BankTypeModel
 from app_bank.serializers.banktype import BankTypeModelSerializer
+from utils.common_response import CommonResponse
 
 
 class BankTypeListAPIView(APIView):
@@ -13,16 +14,16 @@ class BankTypeListAPIView(APIView):
         try:
             bank_type = BankTypeModel.objects.all()
             serializer = BankTypeModelSerializer(bank_type, many=True)
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully get bank type")
         except BankTypeModel.DoesNotExist:
-            return Response({"error": "Data not found."}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Data not found.")
 
     def post(self, request):
         serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Bank Type Successfully Created", "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Bank Type Successfully Created")
+        return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
 
 class BankTypeRetrieveAPIView(APIView):
@@ -34,15 +35,15 @@ class BankTypeRetrieveAPIView(APIView):
             serializer = BankTypeModelSerializer(bank_type, data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Bank Type Successfully Updated")
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except BankTypeModel.DoesNotExist:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Not found")
 
     def delete(self, request, pk):
         try:
             bank_type = BankTypeModel.objects.get(pk=pk)
             bank_type.soft_delete()  # Perform a soft delete
-            return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            return CommonResponse("success", "Deleted successfully", status.HTTP_204_NO_CONTENT, "Bank Type Deleted!")
         except BankTypeModel.DoesNotExist:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "No Content Found")
