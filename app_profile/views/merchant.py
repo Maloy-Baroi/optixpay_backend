@@ -23,7 +23,7 @@ class MerchantListAPIView(APIView):
             merchant_id = request.query_params.get('merchant_id')
             search_query = request.query_params.get('search_query')
             if merchant_id:
-                merchants = MerchantProfile.objects.filter(id=merchant_id)
+                merchants = MerchantProfile.objects.get(id=merchant_id)
                 if not merchants.exists():
                     return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
                 merchants_serializers = MerchantProfileSerializer(merchants)
