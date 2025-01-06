@@ -8,7 +8,8 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MerchantProfile
-        fields = ['id', 'user', 'authorization_details', 'name', 'phone_number', 'unique_id', 'logo', 'payment_methods', 'status',
+        fields = ['id', 'user', 'authorization_details', 'name', 'phone_number', 'unique_id', 'logo', 'payment_methods',
+                  'status',
                   'merchant_wallet', 'app_key', 'secret_key']
         extra_kwargs = {
             'app_key': {'read_only': True},
@@ -26,13 +27,13 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
         }
 
 
-
 class MerchantUpdateProfileSerializer(serializers.ModelSerializer):
     authorization_details = serializers.SerializerMethodField()
 
     class Meta:
         model = MerchantProfile
-        fields = ['id', 'user', 'authorization_details', 'name', 'phone_number', 'unique_id', 'logo', 'payment_methods', 'status',
+        fields = ['id', 'user', 'authorization_details', 'name', 'phone_number', 'unique_id', 'logo', 'payment_methods',
+                  'status',
                   'merchant_wallet', 'app_key', 'secret_key']
         extra_kwargs = {
             'app_key': {'read_only': True},
@@ -58,4 +59,3 @@ class MerchantUpdateProfileSerializer(serializers.ModelSerializer):
         if not value and self.instance and not self.instance.logo:
             raise serializers.ValidationError("No file was submitted for the logo.")
         return value
-

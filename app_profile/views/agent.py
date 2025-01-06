@@ -23,6 +23,8 @@ class AgentDetailsAPIView(APIView):
             search_query = request.query_params.get('search_query')
             if agent_id:
                 agents = AgentProfile.objects.get(id=agent_id)
+                agents_serializers = AgentProfileSerializer(agents)
+                return CommonResponse("success", agents_serializers.data, status.HTTP_200_OK, "Data Found!")
             elif search_query:
                 agents = AgentProfile.objects.filter(
                     Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
@@ -39,9 +41,10 @@ class AgentDetailsAPIView(APIView):
                 return CommonResponse("error", "No merchants available", status.HTTP_404_NOT_FOUND)
 
         except AgentProfile.DoesNotExist:
-                return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return CommonResponse("error", str(e), status.HTTP_400_BAD_REQUEST, "Agent data couldn't be retrieved")
+
 
 class AgentProfileCreateAPIView(APIView):
     permission_classes = (IsAuthenticated,)
