@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AppAgentConfig(AppConfig):
+class AppPrepaymentConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'app_agent'
+    name = 'app_prepayment'

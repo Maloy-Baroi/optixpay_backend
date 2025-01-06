@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'app_withdraw',
     'app_bank',
     'app_mobile',
+    'app_prepayment',
     # Additional Libraries
     'rest_framework',
     'rest_framework_simplejwt',
