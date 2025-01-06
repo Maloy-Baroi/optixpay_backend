@@ -19,31 +19,51 @@ class AgentDetailsAPIView(APIView):
 
     def get(self, request):
         try:
-            agent_id = request.query_params.get('agent_id')
-            search_query = request.query_params.get('search_query')
+            # Extract query parameters
+            page = request.query_params.get('page', 1)
+            page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+            search_query = request.query_params.get('search', '')
+            agent_id = request.query_params.get('agent_id', None)
+            search_status = request.query_params.get('status', '')
+            bank = request.query_params.get('bank', '')
+
+            # Build queryset
+            agents = AgentProfile.objects.all()
+
             if agent_id:
-                agents = AgentProfile.objects.get(id=agent_id)
-                agents_serializers = AgentProfileSerializer(agents)
-                return CommonResponse("success", agents_serializers.data, status.HTTP_200_OK, "Data Found!")
-            elif search_query:
-                agents = AgentProfile.objects.filter(
+                try:
+                    agent = AgentProfile.objects.get(id=agent_id)
+                    agent_serializers = AgentProfileSerializer(agent)
+                    return CommonResponse(
+                        "success", agent_serializers.data, status.HTTP_200_OK, "Data Found!"
+                    )
+                except AgentProfile.DoesNotExist:
+                    return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+
+            if search_query:
+                agents = agents.filter(
                     Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
                 )
-            else:
-                agents = AgentProfile.objects.all()
+            if search_status:
+                agents = agents.filter(status=search_status)
+            if bank:
+                agents = agents.filter(bank__icontains=bank)
 
+            # Apply pagination
             paginator = self.pagination_class()
+            paginator.page_size = int(page_size)  # Override page size if provided
             result_page = paginator.paginate_queryset(agents, request)
+
             if result_page is not None:
                 agents_serializers = AgentProfileSerializer(result_page, many=True)
                 return paginator.get_paginated_response(agents_serializers.data)
             else:
-                return CommonResponse("error", "No merchants available", status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "No agents available")
 
         except AgentProfile.DoesNotExist:
-            return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
         except Exception as e:
-            return CommonResponse("error", str(e), status.HTTP_400_BAD_REQUEST, "Agent data couldn't be retrieved")
+            return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
 
 
 class AgentProfileCreateAPIView(APIView):

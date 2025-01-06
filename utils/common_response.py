@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework import status
 
-def CommonResponse(status_type, data=None, status=status.HTTP_200_OK, message=None):
+
+def CommonResponse(status_type, data=None, _status=None, message=None):
     """
     Generates a common format for API responses.
 
@@ -14,6 +15,6 @@ def CommonResponse(status_type, data=None, status=status.HTTP_200_OK, message=No
     - Response: DRF Response object with specified data and status.
     """
     if status_type == "error":
-        return Response({"status": False, "data": data, "message": message}, status=status)
+        return Response({"status": False, "data": data, "message": message}, status=_status)
     else:
-        return Response({"status": True, "data": data, "message": message}, status=status)
+        return Response({"status": True, "data": data, "message": message}, status=_status)

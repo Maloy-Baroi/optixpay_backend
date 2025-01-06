@@ -20,37 +20,55 @@ class MerchantListAPIView(APIView):
 
     def get(self, request):
         try:
+            # Extract query parameters
+            page = request.query_params.get('page', 1)
+            page_size = request.query_params.get('page_size', self.pagination_class.page_size)
             merchant_id = request.query_params.get('merchant_id')
-            search_query = request.query_params.get('search_query')
-            if merchant_id:
-                merchants = MerchantProfile.objects.get(id=merchant_id)
-                if not merchants:
-                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
-                merchants_serializers = MerchantProfileSerializer(merchants)
-                return CommonResponse("success", merchants_serializers.data, status.HTTP_200_OK, "Data Found!")
+            search_query = request.query_params.get('search', '')
+            search_status = request.query_params.get('status', '')
+            bank = request.query_params.get('bank', '')
 
-            elif search_query:
-                merchants = MerchantProfile.objects.filter(
+            # Filter merchants based on query parameters
+            merchants = MerchantProfile.objects.all()
+
+            if merchant_id:
+                try:
+                    merchant = MerchantProfile.objects.get(id=merchant_id)
+                    merchants_serializers = MerchantProfileSerializer(merchant)
+                    return CommonResponse(
+                        "success", merchants_serializers.data, status.HTTP_200_OK, "Data Found!"
+                    )
+                except MerchantProfile.DoesNotExist:
+                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
+
+            if search_query:
+                merchants = merchants.filter(
                     Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
                 )
-                if not merchants.exists():
-                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
-            else:
-                merchants = MerchantProfile.objects.all()
+            if search_status:
+                merchants = merchants.filter(status=search_status)
+            if bank:
+                merchants = merchants.filter(bank__icontains=bank)
 
+            if not merchants.exists():
+                return CommonResponse("error", "No merchants found", status.HTTP_404_NOT_FOUND)
+
+            # Apply pagination
             paginator = self.pagination_class()
+            paginator.page_size = int(page_size)  # Override page size if provided
             result_page = paginator.paginate_queryset(merchants, request)
+
             if result_page is not None:
                 merchants_serializers = MerchantProfileSerializer(result_page, many=True)
                 return paginator.get_paginated_response(merchants_serializers.data)
             else:
-                return CommonResponse("error", "No merchants available", status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", "No merchants available", status.HTTP_204_NO_CONTENT)
 
-        except MerchantProfile.DoesNotExist:
-            return CommonResponse("error", "Merchant profile not found", status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return CommonResponse("error", str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                  "An error occurred while retrieving merchant data")
+            return CommonResponse(
+                "error", str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "An error occurred while retrieving merchant data"
+            )
 
 
 class MerchantProfileCreateAPIView(APIView):
