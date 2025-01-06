@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-def CommonResponse(status_type, data=None, _status=None, message=None):
+def CommonResponse(status_type, data=None, status=None, message=None):
     """
     Generates a common format for API responses.
 
@@ -15,6 +15,6 @@ def CommonResponse(status_type, data=None, _status=None, message=None):
     - Response: DRF Response object with specified data and status.
     """
     if status_type == "error":
-        return Response({"status": False, "data": data, "message": message}, status=_status)
+        return Response({"status": False, "data": data, "message": message}, status=status)
     else:
-        return Response({"status": True, "data": data, "message": message}, status=_status)
+        return Response({"status": True, "data": data, "message": message}, status=status)
