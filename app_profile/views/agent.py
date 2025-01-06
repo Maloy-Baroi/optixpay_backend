@@ -114,6 +114,6 @@ class AgentProfileDeleteAPIView(APIView):
         try:
             agent = AgentProfile.objects.get(id=pk)
             agent.soft_delete()
-            return CommonResponse("success", {}, status.HTTP_200_OK, "Content Not Found!")
+            return CommonResponse("success", {}, status.HTTP_200_OK, "Deleted Successfully!")
         except AgentProfile.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'AgentProfile not found!')
