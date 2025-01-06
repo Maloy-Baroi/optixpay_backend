@@ -8,7 +8,7 @@ from rest_framework import status
 
 from app_auth.models import CustomUser
 from app_profile.models.merchant import MerchantProfile
-from app_profile.serializers.merchant import MerchantProfileSerializer
+from app_profile.serializers.merchant import MerchantProfileSerializer, MerchantUpdateProfileSerializer
 from app_profile.serializers.user import UserListSerializer
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
@@ -16,6 +16,7 @@ from utils.common_response import CommonResponse
 
 class MerchantListAPIView(APIView):
     permission_classes = (IsAuthenticated,)
+    pagination_class = CustomPagination
 
     def get(self, request):
         try:
@@ -23,22 +24,31 @@ class MerchantListAPIView(APIView):
             search_query = request.query_params.get('search_query')
             if merchant_id:
                 merchants = MerchantProfile.objects.filter(id=merchant_id)
-                merchants_serializers = MerchantProfileSerializer(merchants, many=True)
-                return CommonResponse("success", merchants_serializers.data, status.HTTP_200_OK)
+                if not merchants.exists():
+                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
             elif search_query:
-                agents = MerchantProfile.objects.filter(
+                merchants = MerchantProfile.objects.filter(
                     Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
                 )
-                agents_serializer = MerchantProfileSerializer(agents, many=True)
-                return CommonResponse("success", agents_serializer.data, status.HTTP_200_OK)
+                if not merchants.exists():
+                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
             else:
-                agents = MerchantProfile.objects.all()
-                agents_serializer = MerchantProfileSerializer(agents, many=True)
-                return CommonResponse("success", agents_serializer.data, status.HTTP_200_OK)
+                merchants = MerchantProfile.objects.all()
+
+            paginator = self.pagination_class()
+            result_page = paginator.paginate_queryset(merchants, request)
+            if result_page is not None:
+                merchants_serializers = MerchantProfileSerializer(result_page, many=True)
+                return paginator.get_paginated_response(merchants_serializers.data)
+            else:
+                return CommonResponse("error", "No merchants available", status.HTTP_404_NOT_FOUND)
+
         except MerchantProfile.DoesNotExist:
-            return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", "Merchant profile not found", status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return CommonResponse("error", str(e), status.HTTP_400_BAD_REQUEST, "Agent data couldn't be retrieved")
+            return CommonResponse("error", str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                  "An error occurred while retrieving merchant data")
+
 
 class MerchantProfileCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -53,7 +63,8 @@ class MerchantProfileCreateAPIView(APIView):
 
                 if users.exists():
                     return CommonResponse("error", {},
-                                          status=status.HTTP_400_BAD_REQUEST, message="Username or email already exists")
+                                          status=status.HTTP_400_BAD_REQUEST,
+                                          message="Username or email already exists")
 
                 # Create the user object
                 user = CustomUser(email=email, username=username)
@@ -84,7 +95,7 @@ class MerchantProfileUpdateAPIView(APIView):
         merchant_profile = self.get_object(pk)
         if not merchant_profile:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'MerchantProfile not found')
-        serializer = MerchantProfileSerializer(merchant_profile, data=request.data)
+        serializer = MerchantUpdateProfileSerializer(merchant_profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return CommonResponse("success", serializer.data,
@@ -105,7 +116,6 @@ class MerchantProfileDeleteAPIView(APIView):
             return CommonResponse("error", {}, status=status.HTTP_404_NOT_FOUND, message='MerchantProfile not found')
         merchant_profile.soft_delete()
         return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deleted Successfully")
-
 
 # class UserListAPIView(APIView):
 #     permission_classes = (IsAuthenticated,)
