@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/v1/app-withdraw/', include('app_withdraw.urls')),
     path('api/v1/app-bank/', include('app_bank.urls')),
     path('api/v1/app-mobile/', include('app_mobile.urls')),
+    path('api/v1/app-prepayment/', include('app_prepayment.urls')),
 
 
     path('api/v1/auth/', include('rest_framework.urls')),
