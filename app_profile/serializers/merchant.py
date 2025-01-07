@@ -9,7 +9,7 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MerchantProfile
         fields = ['id', 'user', 'authorization_details', 'name', 'phone_number', 'unique_id', 'logo', 'payment_methods',
-                  'status',
+                  'status', 'is_active'
                   'merchant_wallet', 'app_key', 'secret_key']
         extra_kwargs = {
             'app_key': {'read_only': True},

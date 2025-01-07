@@ -19,7 +19,8 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'name',
             'phone_number',
             'bank_details',
-            'status'
+            'status',
+            'is_active'
         ]
 
         extra_kwargs = {
