@@ -39,7 +39,7 @@ class MerchantListAPIView(APIView):
                         "success", merchants_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
                 except MerchantProfile.DoesNotExist:
-                    return CommonResponse("error", "Merchant not found", status.HTTP_404_NOT_FOUND)
+                    return CommonResponse("error", "Merchant not found", status.HTTP_204_NO_CONTENT)
 
             if search_query:
                 merchants = merchants.filter(
@@ -51,7 +51,7 @@ class MerchantListAPIView(APIView):
                 merchants = merchants.filter(bank__icontains=bank)
 
             if not merchants.exists():
-                return CommonResponse("error", "No merchants found", status.HTTP_404_NOT_FOUND)
+                return CommonResponse("error", "No merchants found", status.HTTP_204_NO_CONTENT)
 
             # Apply pagination
             paginator = self.pagination_class()
@@ -115,7 +115,7 @@ class MerchantProfileUpdateAPIView(APIView):
     def put(self, request, pk):
         merchant_profile = self.get_object(pk)
         if not merchant_profile:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'MerchantProfile not found')
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, 'MerchantProfile not found')
         serializer = MerchantUpdateProfileSerializer(merchant_profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -134,9 +134,9 @@ class MerchantProfileDeleteAPIView(APIView):
     def delete(self, request, pk):
         merchant_profile = self.get_object(pk)
         if not merchant_profile:
-            return CommonResponse("error", {}, status=status.HTTP_404_NOT_FOUND, message='MerchantProfile not found')
+            return CommonResponse("error", {}, status=status.HTTP_204_NO_CONTENT, message='MerchantProfile not found')
         merchant_profile.soft_delete()
-        return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deleted Successfully")
+        return CommonResponse("success", {}, status.HTTP_200_OK, "Deleted Successfully")
 
 # class UserListAPIView(APIView):
 #     permission_classes = (IsAuthenticated,)

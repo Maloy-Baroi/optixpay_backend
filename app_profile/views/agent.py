@@ -38,7 +38,7 @@ class AgentDetailsAPIView(APIView):
                         "success", agent_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
                 except AgentProfile.DoesNotExist:
-                    return CommonResponse("error", "Agent not found", status.HTTP_404_NOT_FOUND)
+                    return CommonResponse("error", "Agent not found", status.HTTP_204_NO_CONTENT)
 
             if search_query:
                 agents = agents.filter(
@@ -100,7 +100,7 @@ class AgentProfileUpdateAPIView(APIView):
         try:
             agent = AgentProfile.objects.get(pk=pk)
         except AgentProfile.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "AgentProfile not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "AgentProfile not found")
 
         serializer = AgentProfileSerializer(agent, data=request.data, partial=True)
         if serializer.is_valid():
@@ -116,4 +116,4 @@ class AgentProfileDeleteAPIView(APIView):
             agent.soft_delete()
             return CommonResponse("success", {}, status.HTTP_200_OK, "Deleted Successfully!")
         except AgentProfile.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'AgentProfile not found!')
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, 'AgentProfile not found!')

@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 
+
 def CommonResponseForPaginator(status_type, data_with_others=None, status_code=status.HTTP_200_OK, message=None):
     # Ensure data_with_others is a dictionary if none is provided
     if data_with_others is None:
