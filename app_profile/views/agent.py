@@ -112,7 +112,7 @@ class AgentProfileUpdateAPIView(APIView):
 class AgentProfileDeleteAPIView(APIView):
     def delete(self, request, pk):
         try:
-            agent = AgentProfile.objects.get(id=pk)
+            agent = AgentProfile.objects.get(id=pk, is_active=True)
             agent.soft_delete()
             return CommonResponse("success", {}, status.HTTP_200_OK, "Deleted Successfully!")
         except AgentProfile.DoesNotExist:

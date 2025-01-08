@@ -66,8 +66,10 @@ class CurrencyAPIView(APIView):
 
     def delete(self, request, pk=None):
         try:
-            currency = Currency.objects.get(pk=pk)
-            currency.delete()
+            currency = Currency.objects.get(pk=pk, is_active=True)
+            if currency is None:
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Currency Not Found!")
+            currency.soft_delete()
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Currency deleted successfully")
         except Currency.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")

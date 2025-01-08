@@ -39,38 +39,43 @@ class BankListCreateAPIView(APIView):
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
-class BankModelAPIView(APIView):
-    def get(self, request, pk=None):
-        if pk:
-            try:
-                bank = AgentBankModel.objects.get(pk=pk)
-            except AgentBankModel.DoesNotExist:
-                raise NotFound(detail="Bank not found.")
-            serializer = BankModelSerializer(bank)
-            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Fetched Success!")
-        else:
-            banks = AgentBankModel.objects.all()
-            serializer = BankModelSerializer(banks, many=True)
-            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Fetched Success!")
+class BankUpdateAPIView(APIView):
+    # def get(self, request, pk=None):
+    #     if pk:
+    #         try:
+    #             bank = AgentBankModel.objects.get(pk=pk)
+    #         except AgentBankModel.DoesNotExist:
+    #             raise NotFound(detail="Bank not found.")
+    #         serializer = BankModelSerializer(bank)
+    #         return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Fetched Success!")
+    #     else:
+    #         banks = AgentBankModel.objects.all()
+    #         serializer = BankModelSerializer(banks, many=True)
+    #         return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Fetched Success!")
 
-    def put(self, request, pk=None):
+    def put(self, request, pk):
         try:
-            bank = AgentBankModel.objects.get(pk=pk)
+            bank = AgentBankModel.objects.get(id=pk)
         except AgentBankModel.DoesNotExist:
             raise NotFound(detail="Bank not found.")
 
         serializer = BankModelSerializer(bank, data=request.data, partial=True, context={'request': request})
-        profile = AgentProfile.objects.filter(user=request.user).first()
+        # profile = AgentProfile.objects.filter(user=request.user).first()
         if serializer.is_valid():
-            serializer.save(agent=profile)  # Will automatically set agent if not provided
+            serializer.save()  # Will automatically set agent if not provided
             return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Success!")
         return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
+
+class BankDeleteAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def delete(self, request, pk=None):
         try:
-            bank = AgentBankModel.objects.get(pk=pk)
+            bank = AgentBankModel.objects.get(pk=pk, is_active=True)
+            bank.soft_delete()
+            return CommonResponse("success", {}, status.HTTP_200_OK, "Bank deleted successfully.")
         except AgentBankModel.DoesNotExist:
-            raise NotFound(detail="Bank not found.")
-
-        bank.delete()
-        return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Bank deleted successfully.")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Record not found.")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, str(e))

@@ -83,7 +83,9 @@ class WithdrawAPIView(APIView):
 
     def delete(self, request, pk=None):
         try:
-            withdraw = Withdraw.objects.get(pk=pk)
+            withdraw = Withdraw.objects.get(pk=pk, is_active=True)
+            if withdraw is None:
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Record Not Found")
             withdraw.soft_delete()
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Withdraw deleted successfully")
         except Withdraw.DoesNotExist:

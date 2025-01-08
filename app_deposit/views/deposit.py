@@ -111,7 +111,7 @@ class DepositAPIView(APIView):
 
     def delete(self, request, pk=None):
         try:
-            deposit = Deposit.objects.get(pk=pk)
+            deposit = Deposit.objects.get(pk=pk, is_active=True)
             deposit.soft_delete()
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deposit deleted successfully")
         except Deposit.DoesNotExist:

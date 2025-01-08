@@ -127,7 +127,7 @@ class MerchantProfileUpdateAPIView(APIView):
 class MerchantProfileDeleteAPIView(APIView):
     def get_object(self, pk):
         try:
-            return MerchantProfile.objects.get(pk=pk)
+            return MerchantProfile.objects.get(pk=pk, is_active=True)
         except MerchantProfile.DoesNotExist:
             return None
 

@@ -26,13 +26,13 @@ class BankTypeListAPIView(APIView):
         return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
 
 
-class BankTypeRetrieveAPIView(APIView):
+class BankTypeUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, pk):
         try:
             bank_type = BankTypeModel.objects.get(pk=pk)
-            serializer = BankTypeModelSerializer(bank_type, data=request.data, context={'request': request})
+            serializer = BankTypeModelSerializer(bank_type, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Bank Type Successfully Updated")
@@ -40,9 +40,13 @@ class BankTypeRetrieveAPIView(APIView):
         except BankTypeModel.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Not found")
 
+
+class BankTypeDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, pk):
         try:
-            bank_type = BankTypeModel.objects.get(pk=pk)
+            bank_type = BankTypeModel.objects.get(pk=pk, is_active=True)
             bank_type.soft_delete()  # Perform a soft delete
             return CommonResponse("success", "Deleted successfully", status.HTTP_204_NO_CONTENT, "Bank Type Deleted!")
         except BankTypeModel.DoesNotExist:
