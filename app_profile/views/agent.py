@@ -26,6 +26,7 @@ class AgentDetailsAPIView(APIView):
             agent_id = request.query_params.get('agent_id', None)
             search_status = request.query_params.get('status', '')
             bank = request.query_params.get('bank', '')
+            is_active = request.query_params.get('is_active', True)
 
             # Build queryset
             agents = AgentProfile.objects.all()
@@ -48,6 +49,8 @@ class AgentDetailsAPIView(APIView):
                 agents = agents.filter(status=search_status)
             if bank:
                 agents = agents.filter(bank__icontains=bank)
+            if is_active:
+                agents = agents.filter(is_active=is_active)
 
             # Apply pagination
             paginator = self.pagination_class()

@@ -27,6 +27,7 @@ class MerchantListAPIView(APIView):
             search_query = request.query_params.get('search', '')
             search_status = request.query_params.get('status', '')
             bank = request.query_params.get('bank', '')
+            is_active = request.query_params.get('is_active', True)
 
             # Filter merchants based on query parameters
             merchants = MerchantProfile.objects.all()
@@ -49,6 +50,8 @@ class MerchantListAPIView(APIView):
                 merchants = merchants.filter(status=search_status)
             if bank:
                 merchants = merchants.filter(bank__icontains=bank)
+            if is_active:
+                merchants = merchants.filter(is_active=is_active)
 
             if not merchants.exists():
                 return CommonResponse("error", "No merchants found", status.HTTP_204_NO_CONTENT)

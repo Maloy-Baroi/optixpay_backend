@@ -46,7 +46,7 @@ class BankTypeListAPIView(APIView):
             if bank:
                 bank_types = bank_types.filter(bank__icontains=bank)
             if is_active:
-                bank_types = bank_types.filter(is_active=True)
+                bank_types = bank_types.filter(is_active=is_active)
 
             if not bank_types.exists():
                 return CommonResponse("error", "No bank_types found", status.HTTP_204_NO_CONTENT)
