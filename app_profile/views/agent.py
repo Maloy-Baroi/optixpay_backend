@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
 from pycparser.plyparser import Coord
@@ -88,6 +89,10 @@ class AgentProfileCreateAPIView(APIView):
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
                 user.save()
+                agent_group, created = Group.objects.get_or_create(name='agent')
+                user.groups.add(agent_group)
+                user.save()
+
                 serializer = AgentProfileSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save(user=user, created_by=user, updated_by=user, is_active=True)
