@@ -1,9 +1,5 @@
 import hashlib
 import secrets
-import uuid
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 
 from app_auth.models import CustomUser
 from app_bank.models.bank import BankTypeModel
