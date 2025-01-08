@@ -21,7 +21,7 @@ class BankTypeListAPIView(APIView):
     def post(self, request):
         serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Bank Type Successfully Created")
         return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
 

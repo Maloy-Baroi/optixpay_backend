@@ -31,7 +31,7 @@ class ProfileListCreateAPIView(APIView):
             serializer = ProfileSerializer(data=request.data, context={"request": request})
             if serializer.is_valid():
                 # Save the profile with the authenticated user as the owner
-                serializer.save(user=request.user, created_by=request.user, updated_by=request.user)
+                serializer.save(user=request.user, created_by=request.user, updated_by=request.user, is_active=True)
                 return CommonResponse("success", data=serializer.data, status=status.HTTP_201_CREATED, message="Successfully created!")
             # Return validation errors
             return CommonResponse("errors", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)

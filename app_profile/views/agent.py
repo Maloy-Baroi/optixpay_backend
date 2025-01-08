@@ -87,7 +87,7 @@ class AgentProfileCreateAPIView(APIView):
                 user.save()
                 serializer = AgentProfileSerializer(data=request.data)
                 if serializer.is_valid():
-                    serializer.save(user=user, created_by=user, updated_by=user)
+                    serializer.save(user=user, created_by=user, updated_by=user, is_active=True)
                     return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created")
                 else:
                     return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessfully")

@@ -73,7 +73,7 @@ class DepositListAPIView(APIView):
 
         if serializer.is_valid():
             # Save the deposit record
-            deposit = serializer.save(created_by=request.user, updated_by=request.user)
+            deposit = serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
 
             # Return a response
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")

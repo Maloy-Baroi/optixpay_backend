@@ -28,7 +28,7 @@ class CurrencyListPostAPIView(APIView):
     def post(self, request):
         serializer = CurrencySerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(created_by=request.user, updated_by=request.user)
+            serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully created new currency")
         else:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)

@@ -11,12 +11,6 @@ from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
 
-class PrepaymentCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        pass
-
 
 class PrepaymentListAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -67,13 +61,26 @@ class PrepaymentListAPIView(APIView):
         except Exception as e:
             return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Record not found")
 
+    def post(self, request):
+        try:
+            serializer = PrepaymentSerializer(data=request.data)
+            if serializer.is_valid():
+                # Set the creator of the prepayment
+                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successful Created")
+            else:
+                return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessful!")
+
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
 
 class PrepaymentUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, pk):
         try:
-            prepayment = get_object_or_404(Prepayment, pk=pk)
+            prepayment = get_object_or_404(Prepayment, pk=pk, is_active=True)
             serializer = PrepaymentSerializer(prepayment, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

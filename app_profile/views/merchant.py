@@ -96,7 +96,7 @@ class MerchantProfileCreateAPIView(APIView):
                 serializer = MerchantProfileSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
                     # Link the newly created user and the currently authenticated user for created_by and updated_by
-                    merchant_profile = serializer.save(user=user, created_by=request.user, updated_by=request.user)
+                    merchant_profile = serializer.save(user=user, created_by=request.user, updated_by=request.user, is_active=True)
                     return CommonResponse("success", serializer.data,
                                           status=status.HTTP_201_CREATED, message="Successfully Created")
                 else:

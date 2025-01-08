@@ -7,6 +7,7 @@ class PrepaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prepayment
         fields = [
+            'id',
             'order_id',
             'agent_id',
             'transaction_hash',
@@ -16,6 +17,7 @@ class PrepaymentSerializer(serializers.ModelSerializer):
             'exchange_rate',
             'amount_bdt',
             'status',
+            'is_active',
             'created_by',
             'updated_by',
             'created_at',
@@ -23,5 +25,5 @@ class PrepaymentSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = [
-            {'created_by', 'updated_by', 'created_at', 'updated_at'}
+            'created_by', 'updated_by', 'created_at', 'updated_at', 'is_active'
         ]
