@@ -125,7 +125,7 @@ class StaffProfileUpdateAPIView(APIView):
             staff_profile = self.get_object(pk)
             if not staff_profile:
                 return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, 'Record not found')
-            serializer = ProfileSerializer(staff_profile, data=request.data)
+            serializer = ProfileSerializer(staff_profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data,
