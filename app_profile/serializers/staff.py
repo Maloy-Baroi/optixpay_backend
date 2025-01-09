@@ -4,6 +4,8 @@ from app_profile.models.staff import StaffProfile
 
 
 class StaffSerializer(serializers.ModelSerializer):
+    authorization_details = serializers.SerializerMethodField()
+
     class Meta:
         model = StaffProfile
         fields = [
@@ -11,6 +13,7 @@ class StaffSerializer(serializers.ModelSerializer):
             'name',
             'phone_number',
             'unique_id',
+            'authorization_details',
             'created_by',
             'updated_by',
             'created_at',
@@ -18,8 +21,16 @@ class StaffSerializer(serializers.ModelSerializer):
         ]
 
         extra_kwargs = {
+            'user': {'read_only': True},
             'created_by': {'read_only': True},
             'updated_by': {'read_only': True},
             'created_at': {'read_only': True},
             'updated_at': {'read_only': True}
+        }
+
+    def get_authorization_details(self, obj):
+        # Only return non-sensitive information related to authorization
+        return {
+            "email": obj.user.email,
+            "username": obj.user.username,
         }
