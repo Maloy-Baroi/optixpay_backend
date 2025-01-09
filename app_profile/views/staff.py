@@ -116,7 +116,7 @@ class StaffProfileUpdateAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return StaffProfile.objects.get(pk=pk)
+            return StaffProfile.objects.get(id=pk)
         except StaffProfile.DoesNotExist:
             return None
 
@@ -140,7 +140,7 @@ class StaffProfileDeleteAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return StaffProfile.objects.get(pk=pk)
+            return StaffProfile.objects.get(id=pk)
         except StaffProfile.DoesNotExist:
             return None
 
