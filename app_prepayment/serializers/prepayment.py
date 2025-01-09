@@ -27,3 +27,8 @@ class PrepaymentSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'created_by', 'updated_by', 'created_at', 'updated_at', 'is_active'
         ]
+
+        extra_kwargs = {
+            'agent_id': {'required': False},
+            'status': {'required': False},
+        }

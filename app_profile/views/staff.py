@@ -102,13 +102,13 @@ class StaffCreateAPIView(APIView):
                 if serializer.is_valid():
                     # Link the newly created user and the currently authenticated user for created_by and updated_by
                     staff_profile = serializer.save(user=user, created_by=request.user, updated_by=request.user,
-                                                       is_active=True)
+                                                       is_active=True, status='Active')
                     return CommonResponse("success", serializer.data,
                                           status=status.HTTP_201_CREATED, message="Successfully Created")
                 else:
-                    return CommonResponse("error", serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessful")
         except Exception as e:
-            return CommonResponse("error", str(e), status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
 class StaffProfileUpdateAPIView(APIView):
