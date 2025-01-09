@@ -86,7 +86,7 @@ class CurrencyListPostAPIView(APIView):
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
                                   "Successfully created new currency")
         else:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful")
 
 
 class CurrencyUpdateAPIView(APIView):
@@ -99,7 +99,7 @@ class CurrencyUpdateAPIView(APIView):
                 serializer = CurrencySerializer(currency)
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully fetched currency")
             except Currency.DoesNotExist:
-                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Currency not found")
         else:
             currencies = Currency.objects.all()
             serializer = CurrencySerializer(currencies, many=True)
@@ -107,7 +107,7 @@ class CurrencyUpdateAPIView(APIView):
 
     def put(self, request, pk=None):
         if not pk:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Missing currency identifier")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Missing currency identifier")
         try:
             currency = Currency.objects.get(pk=pk)
             serializer = CurrencySerializer(currency, data=request.data, context={'request': request})
@@ -116,7 +116,7 @@ class CurrencyUpdateAPIView(APIView):
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully updated currency")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Invalid data")
         except Currency.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Currency not found")
 
 
 class CurrencyDeleteAPIView(APIView):
@@ -124,10 +124,10 @@ class CurrencyDeleteAPIView(APIView):
 
     def delete(self, request, pk=None):
         if not pk:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Missing currency identifier")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Missing currency identifier")
         try:
             currency = Currency.objects.get(pk=pk, is_active=True)
             currency.soft_delete()
             return CommonResponse("success", {}, status.HTTP_200_OK, "Currency deleted successfully")
         except Currency.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Currency not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Currency not found")

@@ -144,7 +144,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         except CustomUser.DoesNotExist:
             # If the user does not exist, return an error response
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, 'User not found')
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, 'User not found')
 
 
 class CustomTokenRefreshView(TokenRefreshView):

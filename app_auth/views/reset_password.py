@@ -51,7 +51,7 @@ class SendOTPView(APIView):
                     email_process.start()
                     return CommonResponse("success", {'message': 'OTP sent to email'}, status=status.HTTP_200_OK)
                 return CommonResponse("error", {'error': 'User with this email does not exist'},
-                                      status=status.HTTP_404_NOT_FOUND)
+                                      status=status.HTTP_204_NO_CONTENT)
             return CommonResponse("error", {'error': 'Email field is required'},
                                   status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -86,23 +86,23 @@ class ResetPasswordAPIView(APIView):
         confirm_password = request.data.get('confirm_password')
 
         if not email or not new_password or not confirm_password:
-            return CommonResponse("error", {'error': 'All fields are required'},
-                                  status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {},
+                                  status.HTTP_400_BAD_REQUEST, 'All fields are required')
 
         if new_password != confirm_password:
-            return CommonResponse("error", {'error': 'Passwords do not match'},
-                                  status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {},
+                                  status.HTTP_400_BAD_REQUEST, 'Passwords do not match')
 
         try:
             user = CustomUser.objects.get(email=email)  # Retrieve the user
             if user:  # Check if user exists
                 user.set_password(new_password)  # Securely hash and set new password
                 user.save()  # Save the user object to update the password in the database
-                return CommonResponse("success", {'message': 'Password reset successfully!'},
-                                      status=status.HTTP_200_OK)
+                return CommonResponse("success", {},
+                                      status.HTTP_200_OK, 'Password reset successfully!')
         except CustomUser.DoesNotExist:
-            return CommonResponse("error", {'error': 'User does not exist'},
-                                  status=status.HTTP_404_NOT_FOUND)
+            return CommonResponse("error", {},
+                                  status.HTTP_204_NO_CONTENT, 'User does not exist')
         except Exception as e:
-            return CommonResponse("error", {'error': str(e)},
-                                  status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {},
+                                  status.HTTP_204_NO_CONTENT, str(e))

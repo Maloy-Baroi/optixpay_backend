@@ -100,4 +100,4 @@ class BankTypeDeleteAPIView(APIView):
             bank_type.soft_delete()  # Perform a soft delete
             return CommonResponse("success", "Deleted successfully", status.HTTP_204_NO_CONTENT, "Bank Type Deleted!")
         except BankTypeModel.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "No Content Found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No Content Found")

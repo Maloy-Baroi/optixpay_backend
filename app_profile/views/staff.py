@@ -123,7 +123,7 @@ class StaffProfileUpdateAPIView(APIView):
     def put(self, request, pk):
         staff_profile = self.get_object(pk)
         if not staff_profile:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Record not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Record not found")
 
         serializer = StaffSerializer(staff_profile, data=request.data, partial=True)
         if serializer.is_valid():
