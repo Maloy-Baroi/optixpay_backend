@@ -5,6 +5,7 @@ from app_profile.views.agent import AgentProfileCreateAPIView, AgentProfileUpdat
 from app_profile.views.merchant import MerchantProfileCreateAPIView, MerchantProfileUpdateAPIView, \
     MerchantProfileDeleteAPIView, MerchantListAPIView
 from app_profile.views.profile import ProfileListCreateAPIView, ProfileRetrieveUpdateAPIView
+from app_profile.views.staff import StaffListAPIView, StaffCreateAPIView, StaffProfileUpdateAPIView, StaffProfileDeleteAPIView
 
 urlpatterns = [
     # path('profiles/', ProfileListCreateAPIView.as_view(), name='profile-list-create'),
@@ -18,7 +19,12 @@ urlpatterns = [
     path('merchant/delete/<int:pk>/', MerchantProfileDeleteAPIView.as_view(), name='delete-merchant-profile'),
 
     path('agents/', AgentDetailsAPIView.as_view(), name='agent-list'),
-    path('agent/create/', AgentProfileCreateAPIView.as_view(), name='create-merchant-profile'),
-    path('agent/update/<int:pk>/', AgentProfileUpdateAPIView.as_view(), name='update-merchant-profile'),
-    path('agent/delete/<int:pk>/', AgentProfileDeleteAPIView.as_view(), name='delete-merchant-profile'),
+    path('agent/create/', AgentProfileCreateAPIView.as_view(), name='create-agent-profile'),
+    path('agent/update/<int:pk>/', AgentProfileUpdateAPIView.as_view(), name='update-agent-profile'),
+    path('agent/delete/<int:pk>/', AgentProfileDeleteAPIView.as_view(), name='delete-agent-profile'),
+
+    path('staffs/', StaffListAPIView.as_view(), name='agent-list'),
+    path('staff/create/', StaffCreateAPIView.as_view(), name='agent-list'),
+    path('staff/update/<int:pk>/', StaffProfileUpdateAPIView.as_view(), name='update-agent-profile'),
+    path('staff/delete/<int:pk>/', StaffProfileDeleteAPIView.as_view(), name='delete-agent-profile'),
 ]

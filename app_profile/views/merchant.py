@@ -1,4 +1,5 @@
 from django.contrib.admin.templatetags.admin_list import pagination
+from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
@@ -93,6 +94,9 @@ class MerchantProfileCreateAPIView(APIView):
                 # Create the user object
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
+                user.save()
+                merchant_group, created = Group.objects.get_or_create(name='merchant')
+                user.groups.add(merchant_group)
                 user.save()
 
                 # Set up the serializer with the created user and request data
