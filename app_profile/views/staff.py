@@ -116,23 +116,21 @@ class StaffProfileUpdateAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return StaffProfile.objects.get(id=pk)
+            return StaffProfile.objects.get(pk=pk)
         except StaffProfile.DoesNotExist:
             return None
 
     def put(self, request, pk):
-        try:
-            staff_profile = self.get_object(pk)
-            if not staff_profile:
-                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, 'Record not found')
-            serializer = ProfileSerializer(staff_profile, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return CommonResponse("success", serializer.data,
-                                      status.HTTP_200_OK, "Successfully Updated")
-            return CommonResponse("error", serializer.errors, status.HTTP_204_NO_CONTENT, "Record not found")
-        except Exception as e:
-            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT), str(e)
+        staff_profile = self.get_object(pk)
+        if not staff_profile:
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Record not found")
+
+        serializer = StaffSerializer(staff_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully updated")
+        else:
+            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Validation errors")
 
 
 class StaffProfileDeleteAPIView(APIView):
