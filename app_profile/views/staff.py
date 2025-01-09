@@ -72,6 +72,10 @@ class StaffListAPIView(APIView):
                 "An error occurred while retrieving staff data"
             )
 
+
+class StaffCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
             with transaction.atomic():  # Ensures all operations inside are part of a single transaction
