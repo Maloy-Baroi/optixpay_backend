@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from app_prepayment.models.prepayment import Prepayment
-from app_prepayment.serializers.prepayment import PrepaymentSerializer
+from app_prepayment.serializers.prepayment import PrepaymentSerializer, PrepaymentUpdateSerializer
 from app_profile.models.agent import AgentProfile
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
@@ -82,7 +82,7 @@ class PrepaymentUpdateAPIView(APIView):
     def put(self, request, pk):
         try:
             prepayment = get_object_or_404(Prepayment, pk=pk, is_active=True)
-            serializer = PrepaymentSerializer(prepayment, data=request.data, partial=True)
+            serializer = PrepaymentUpdateSerializer(prepayment, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Record updated")

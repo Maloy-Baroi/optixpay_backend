@@ -18,7 +18,7 @@ class Prepayment(BaseModel):
     sender_address = models.CharField(max_length=100)
     receiver_address = models.CharField(max_length=100)
     exchange_rate = models.FloatField(default=0.0)
-    amount_bdt = models.FloatField(default=0.0)
+    converted_amount = models.FloatField(default=0.0)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
     def __str__(self):
