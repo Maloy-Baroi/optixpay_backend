@@ -3,16 +3,6 @@ import hashlib
 import hmac
 import requests
 
-def hex_shift_encrypt(hex_string, shift):
-    encrypted_hex = ""
-    for char in hex_string:
-        # Convert hex digit to an integer (0-15)
-        digit = int(char, 16)
-        # Apply shift and wrap around 16
-        new_digit = (digit + shift) % 16
-        # Convert integer back to hex digit
-        encrypted_hex += format(new_digit, 'x')
-    return encrypted_hex
 
 def x_signature_generate(user_id):
     platform_id = 1333
@@ -39,11 +29,7 @@ def x_signature_generate(user_id):
     # Result
     if response.status_code == 200:
         result = response.json()
-        if result and result['address']:
-            return hex_shift_encrypt(result['address'], 172323)
+        return result
     else:
         print(f"HTTP Code: {response.status_code}")
         print(f"Response: {response.text}")
-
-
-
