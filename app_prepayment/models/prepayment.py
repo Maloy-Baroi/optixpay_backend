@@ -11,7 +11,6 @@ class Prepayment(BaseModel):
         ('Failed', 'Failed'),
     ]
 
-    order_id = models.CharField(max_length=100, unique=True)
     agent_id = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name='prepayment_agent')
     transaction_hash = models.CharField(max_length=100)
     amount_usdt = models.FloatField(default=0.0)

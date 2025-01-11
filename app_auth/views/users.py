@@ -1,4 +1,5 @@
 import random
+from inspect import signature
 from multiprocessing import Process
 
 from django.conf import settings
@@ -14,8 +15,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from app_auth.models import CustomUser, UserVerificationToken
 from app_auth.serializers.users import OTPVerificationSerializer, UserRegistrationSerializer
+from app_profile.models.agent import AgentProfile
 from services.isActiveUser import IsUserActive, is_user_active
 from services.send_main import send_verification_email
+from services.x_signature import x_signature_generate
 from utils.common_response import CommonResponse
 
 # Create User
@@ -125,6 +128,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
                 # Get user groups
                 groups = [i.name for i in user.groups.all()]
+
+                signature = None
+
+                if "agent" in groups:
+                    agent = AgentProfile.objects.filter(user=user).only('prepayment_address').first()
+                    if agent and not agent.prepayment_address:
+                        agent.prepayment_address = x_signature_generate(user_id=user.id)
+                        agent.save()
+                    signature = agent.prepayment_address if agent else None
+
                 permissions = user.user_permissions.all()
 
                 # permission_serializers = PermissionSerializer(permissions, many=True)
@@ -133,8 +146,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                     'access': access_token,
                     'groups': groups,
                     'username': user.username,
-                    'email': user.email
-                    # 'permissions': permission_serializers
+                    'email': user.email,
+                    # 'permissions': permission_serializers,
+                    'prepayment_address': signature
                 }, status.HTTP_200_OK, "Login Successful!")
                 # If password is correct, proceed to issue the token
                 # return super().post(request, *args, **kwargs)

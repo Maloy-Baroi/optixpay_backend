@@ -1,7 +1,32 @@
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin, Group, Permission
+from django.contrib.auth.models import PermissionsMixin, Group, Permission, GroupManager
 from django.db import models
 from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
+
+
+# class CustomPermission(Permission):
+#     name = models.CharField(max_length=255)
+#
+# class CustomGroup(Group):
+#     name = models.CharField(_("name"), max_length=150, unique=True)
+#     permissions = models.ManyToManyField(
+#         CustomPermission,
+#         verbose_name=_("permissions"),
+#         blank=True,
+#     )
+#
+#     objects = GroupManager()
+#
+#     class Meta:
+#         verbose_name = _("custom_group")
+#         verbose_name_plural = _("custom_groups")
+#
+#     def __str__(self):
+#         return self.name
+#
+#     def natural_key(self):
+#         return (self.name,)
 
 
 # app_auth/models.py

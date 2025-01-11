@@ -36,7 +36,7 @@ class PrepaymentListAPIView(APIView):
                         "success", prepayment_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
                 except Prepayment.DoesNotExist:
-                    return CommonResponse("error", "Record not found", status.HTTP_404_NOT_FOUND)
+                    return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Record not found")
 
             if search_query:
                 prepayments = prepayments.filter(
