@@ -28,7 +28,6 @@ class BankListCreateAPIView(APIView):
         try:
             agent_id = request.data.get('agent')
             serializer = BankModelSerializer(data=request.data, context={'request': request})
-            print("Profile: ", AgentProfile.objects.filter(id=agent_id))
             profile = AgentProfile.objects.filter(id=agent_id).first() if AgentProfile.objects.filter(id=agent_id).exists() else None
             if serializer.is_valid() and profile:
                 serializer.save(agent=profile, created_by=request.user,

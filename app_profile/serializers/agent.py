@@ -19,6 +19,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'name',
             'phone_number',
             'bank_details',
+            'currency',
             'status',
             'is_active'
         ]

@@ -1,5 +1,3 @@
-from locale import currency
-
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
@@ -40,7 +38,7 @@ class AgentBankModel(BaseModel):
     bank_unique_id = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the bank")
     # Business Name
     bank_name = models.CharField(max_length=100, help_text="Name of the bank")
-    currency = models.ForeignKey('app_deposit.Currency', on_delete=models.SET_NULL, null=True, blank=True)
+    # currency = models.ForeignKey('app_deposit.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     # Bank
     bank_type = models.ForeignKey(BankTypeModel, on_delete=models.CASCADE, related_name="banks", help_text="Type of the bank")
     # Agent
