@@ -93,7 +93,7 @@ class StaffCreateAPIView(APIView):
                 # Create the user object
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
-                user.save(status='Active')
+                user.save()
                 staff_group, created = Group.objects.get_or_create(name=group)
                 user.groups.add(staff_group)
                 user.save()

@@ -16,7 +16,7 @@ class StaffProfile(BaseModel):
     name = models.CharField(max_length=120)
     phone_number = models.CharField(max_length=20)
     unique_id = models.CharField(max_length=20, unique=True)
-    status = models.CharField(max_length=120, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=120, choices=STATUS_CHOICES, default='Active')
 
     def save(self, *args, **kwargs):
         self.unique_id = f"staff_{generate_short_uuid()}"

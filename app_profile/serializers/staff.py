@@ -28,8 +28,7 @@ class StaffSerializer(serializers.ModelSerializer):
             'updated_by': {'read_only': True},
             'created_at': {'read_only': True},
             'updated_at': {'read_only': True},
-            'unique_id': {'read_only': True},
-            'status': {'read_only': True},
+            'unique_id': {'read_only': True}
         }
 
     def get_authorization_details(self, obj):
