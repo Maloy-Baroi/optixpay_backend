@@ -1,6 +1,8 @@
 from django.db import models
 
 from app_bank.models.bank import AgentBankModel
+from app_profile.models.agent import AgentProfile
+from app_profile.models.merchant import MerchantProfile
 from app_profile.models.profile import Profile
 import uuid
 
@@ -24,10 +26,10 @@ class Currency(BaseModel):
 
 class Deposit(BaseModel):
     # Foreign Key relationships
-    merchant_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='merchant_deposits')
+    merchant_id = models.ForeignKey(MerchantProfile, on_delete=models.CASCADE, related_name='merchant_deposits')
     customer_id = models.CharField(max_length=255)
     bank = models.ForeignKey(AgentBankModel, on_delete=models.CASCADE, related_name='bank_deposits')
-    agent_id = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='agent_deposits')
+    agent_id = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name='agent_deposits')
 
     # Fields
     order_id = models.CharField(max_length=255, unique=True)  # Order ID from merchant's side

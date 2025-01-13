@@ -82,6 +82,7 @@ class StaffCreateAPIView(APIView):
                 email = request.data.get('email')
                 password = request.data.get('password', "123456")
                 username = request.data.get('username')
+                group = request.data.get('group')
                 users = CustomUser.objects.filter(Q(email=email) | Q(username=username))
 
                 if users.exists():
@@ -93,7 +94,7 @@ class StaffCreateAPIView(APIView):
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
                 user.save()
-                staff_group, created = Group.objects.get_or_create(group_name='staff')
+                staff_group, created = Group.objects.get_or_create(name=group)
                 user.groups.add(staff_group)
                 user.save()
 

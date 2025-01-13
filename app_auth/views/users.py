@@ -3,6 +3,7 @@ from multiprocessing import Process
 from django.contrib.auth.models import Group
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -173,3 +174,26 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         except TokenError as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Token Error!")
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        if old_password == new_password:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Old password and new password should not be the same.")
+
+        loggedInUser = CustomUser.objects.get(email=user.email)
+
+        if loggedInUser.check_password(old_password):
+            loggedInUser.set_password(new_password)
+            loggedInUser.save()
+            return CommonResponse("success", {}, status.HTTP_200_OK, "Password Changed Successfully")
+
+        else:
+            return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Unauthorized User with given credentials!")
+
