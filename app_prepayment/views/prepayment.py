@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from app_prepayment.models.prepayment import Prepayment
-from app_prepayment.serializers.prepayment import PrepaymentSerializer
+from app_prepayment.serializers.prepayment import PrepaymentSerializer, PrepaymentUpdateSerializer
+from app_profile.models.agent import AgentProfile
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -35,7 +36,7 @@ class PrepaymentListAPIView(APIView):
                         "success", prepayment_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
                 except Prepayment.DoesNotExist:
-                    return CommonResponse("error", "Record not found", status.HTTP_404_NOT_FOUND)
+                    return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Record not found")
 
             if search_query:
                 prepayments = prepayments.filter(
@@ -66,11 +67,11 @@ class PrepaymentListAPIView(APIView):
             serializer = PrepaymentSerializer(data=request.data)
             if serializer.is_valid():
                 # Set the creator of the prepayment
-                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                agent = AgentProfile.objects.get(user=request.user)
+                serializer.save(agent_id=agent,created_by=request.user, updated_by=request.user, is_active=True, status='Pending')
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successful Created")
             else:
                 return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessful!")
-
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
@@ -81,7 +82,7 @@ class PrepaymentUpdateAPIView(APIView):
     def put(self, request, pk):
         try:
             prepayment = get_object_or_404(Prepayment, pk=pk, is_active=True)
-            serializer = PrepaymentSerializer(prepayment, data=request.data, partial=True)
+            serializer = PrepaymentUpdateSerializer(prepayment, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Record updated")

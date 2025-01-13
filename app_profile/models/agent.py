@@ -16,6 +16,7 @@ class AgentProfile(BaseModel):
     unique_id = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255, default="Unknown")
     phone_number = models.CharField(max_length=30, null=True, blank=False)
+    prepayment_address = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Active')
 
     def save(self, *args, **kwargs):

@@ -11,14 +11,13 @@ class Prepayment(BaseModel):
         ('Failed', 'Failed'),
     ]
 
-    order_id = models.CharField(max_length=100, unique=True)
     agent_id = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name='prepayment_agent')
     transaction_hash = models.CharField(max_length=100)
     amount_usdt = models.FloatField(default=0.0)
     sender_address = models.CharField(max_length=100)
     receiver_address = models.CharField(max_length=100)
     exchange_rate = models.FloatField(default=0.0)
-    amount_bdt = models.FloatField(default=0.0)
+    converted_amount = models.FloatField(default=0.0)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
     def __str__(self):

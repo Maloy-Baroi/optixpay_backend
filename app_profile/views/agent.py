@@ -98,9 +98,9 @@ class AgentProfileCreateAPIView(APIView):
                     serializer.save(user=user, created_by=user, updated_by=user, is_active=True)
                     return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created")
                 else:
-                    return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessfully")
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Unsuccessfully")
         except Exception as e:
-            return CommonResponse("error", str(e), status=status.HTTP_400_BAD_REQUEST)
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
 class AgentProfileUpdateAPIView(APIView):

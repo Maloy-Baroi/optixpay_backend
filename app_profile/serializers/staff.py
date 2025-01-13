@@ -18,7 +18,8 @@ class StaffSerializer(serializers.ModelSerializer):
             'created_by',
             'updated_by',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'status'
         ]
 
         extra_kwargs = {
