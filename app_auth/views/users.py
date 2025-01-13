@@ -1,30 +1,20 @@
 import random
-from inspect import signature
 from multiprocessing import Process
-
-from django.conf import settings
 from django.contrib.auth.models import Group
-from django.core.mail import send_mail
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, generics
-from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from app_auth.models import CustomUser, UserVerificationToken
-from app_auth.serializers.users import OTPVerificationSerializer, UserRegistrationSerializer
+from app_auth.serializers.users import UserRegistrationSerializer
 from app_profile.models.agent import AgentProfile
-from services.isActiveUser import IsUserActive, is_user_active
+from services.isActiveUser import is_user_active
 from services.send_main import send_verification_email
 from services.x_signature import x_signature_generate
 from utils.common_response import CommonResponse
-
-# Create User
-import threading
-from django.core.mail import send_mail
-from django.conf import settings
 
 
 class UserRegistrationView(APIView):

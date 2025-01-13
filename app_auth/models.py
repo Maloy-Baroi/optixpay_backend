@@ -5,29 +5,33 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 
-# class CustomPermission(Permission):
-#     name = models.CharField(max_length=255)
-#
-# class CustomGroup(Group):
-#     name = models.CharField(_("name"), max_length=150, unique=True)
-#     permissions = models.ManyToManyField(
-#         CustomPermission,
-#         verbose_name=_("permissions"),
-#         blank=True,
-#     )
-#
-#     objects = GroupManager()
-#
-#     class Meta:
-#         verbose_name = _("custom_group")
-#         verbose_name_plural = _("custom_groups")
-#
-#     def __str__(self):
-#         return self.name
-#
-#     def natural_key(self):
-#         return (self.name,)
+class CustomPermission(Permission):
+    permission_name = models.CharField(max_length=255, unique=True)
+    inclusive_models = models.TextField(default="", blank=True)
 
+    def __str__(self):
+        return self.name
+
+
+class CustomGroup(Group):
+    group_name = models.CharField(_("name"), max_length=150, unique=True)
+    all_permissions = models.ManyToManyField(
+        CustomPermission,
+        verbose_name=_("permissions"),
+        blank=True,
+    )
+
+    objects = GroupManager()
+
+    class Meta:
+        verbose_name = _("custom_group")
+        verbose_name_plural = _("custom_groups")
+
+    def __str__(self):
+        return self.name
+
+    def natural_key(self):
+        return (self.name,)
 
 # app_auth/models.py
 class CustomUserManager(BaseUserManager):
@@ -84,7 +88,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     groups = models.ManyToManyField(
-        Group,
+        CustomGroup,
         related_name='custom_user_set',  # Custom related name to avoid clash
         blank=True,
         help_text='The groups this user belongs to.',
