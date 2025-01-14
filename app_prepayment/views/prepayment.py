@@ -29,10 +29,12 @@ class WebhookAPIView(APIView):
     def post(self, request):
         try:
             received_signature = request.headers.get('x-signature', '')
+            print("Received Signature: ", received_signature)
             request_body = request.body.decode('utf-8')
             platform_id = '1333'
             signature_contract = f'{platform_id};{request_body};{SECRET_KEY}'
             signature = hmac.new(SECRET_KEY.encode(), signature_contract.encode(), hashlib.sha256).hexdigest()
+            print("Generated Signature: ", signature)
 
             if hmac.compare_digest(received_signature, signature):
                 data = request.data
@@ -61,7 +63,6 @@ class WebhookAPIView(APIView):
                 return Response({"status": "success", "message": "Data received and verified"}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
-
         except Exception as e:
             return Response({"error": "Unknown error", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
