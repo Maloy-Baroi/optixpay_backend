@@ -34,7 +34,7 @@ class WebhookAPIView(APIView):
             signature_contract = f'{platform_id};{request_body};{SECRET_KEY}'
             signature = hmac.new(SECRET_KEY.encode(), signature_contract.encode(), hashlib.sha256).hexdigest()
 
-            if not hmac.compare_digest(received_signature, signature):
+            if hmac.compare_digest(received_signature, signature):
                 data = request.data
 
                 try:
