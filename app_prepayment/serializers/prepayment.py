@@ -8,7 +8,6 @@ class PrepaymentSerializer(serializers.ModelSerializer):
         model = Prepayment
         fields = [
             'id',
-            'order_id',
             'agent_id',
             'transaction_hash',
             'amount_usdt',
@@ -16,8 +15,9 @@ class PrepaymentSerializer(serializers.ModelSerializer):
             'receiver_address',
             'exchange_rate',
             'converted_amount',
+            'platform_id',
+            'payment_id',
             'status',
-            'is_active',
             'created_by',
             'updated_by',
             'created_at',

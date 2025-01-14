@@ -2,7 +2,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app_prepayment.models.prepayment import Prepayment
@@ -11,6 +12,58 @@ from app_profile.models.agent import AgentProfile
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
+import hashlib
+import hmac
+import json
+
+# Shared secret key (ensure this is securely managed, not hard-coded in production)
+SECRET_KEY = 'ebb620-d11037-56c184-d69d9e-f04a7'
+
+# Assuming SECRET_KEY and other constants are defined and imported correctly
+class WebhookAPIView(APIView):
+    """
+    Handle webhook calls with signature verification.
+    """
+    permission_classes = [AllowAny]  # This allows the endpoint to be accessed without authentication
+
+    def post(self, request):
+        try:
+            received_signature = request.headers.get('x-signature', '')
+            request_body = request.body.decode('utf-8')
+            platform_id = '1333'
+            signature_contract = f'{platform_id};{request_body};{SECRET_KEY}'
+            signature = hmac.new(SECRET_KEY.encode(), signature_contract.encode(), hashlib.sha256).hexdigest()
+
+            if not hmac.compare_digest(received_signature, signature):
+                data = request.data
+
+                try:
+                    agent = AgentProfile.objects.get(id=int(data.get('orderId')))
+                except AgentProfile.DoesNotExist:
+                    return Response({"error": "AgentProfile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                prepayment = Prepayment(
+                    agent_id=agent,
+                    transaction_hash=data.get('txhash'),
+                    amount_usdt=data.get('amount'),
+                    sender_address=data.get('addressFrom'),
+                    receiver_address=data.get('addressTo'),
+                    platform_id=data.get('platformId'),
+                    payment_id=data.get('paymentId'),
+                    exchange_rate=120.87,
+                    converted_amount=120.87 * float(data.get('amount')),
+                    status='Pending',
+                    created_by=agent.user,
+                    updated_by=agent.user
+                )
+                prepayment.save()
+
+                return Response({"status": "success", "message": "Data received and verified"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            return Response({"error": "Unknown error", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PrepaymentListAPIView(APIView):

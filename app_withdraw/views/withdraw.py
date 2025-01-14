@@ -90,17 +90,6 @@ class WithdrawCreateAPIView(APIView):
 class WithdrawUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, pk=None):
-        if pk:
-            try:
-                withdraw = Withdraw.objects.get(pk=pk)
-                serializer = WithdrawSerializer(withdraw)
-                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
-            except Withdraw.DoesNotExist:
-                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
-        else:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
-
     def put(self, request, pk=None):
         try:
             withdraw = Withdraw.objects.get(pk=pk)

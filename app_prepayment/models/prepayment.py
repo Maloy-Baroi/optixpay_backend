@@ -18,6 +18,8 @@ class Prepayment(BaseModel):
     receiver_address = models.CharField(max_length=100)
     exchange_rate = models.FloatField(default=0.0)
     converted_amount = models.FloatField(default=0.0)
+    platform_id = models.CharField(max_length=100)
+    payment_id = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
     def __str__(self):
