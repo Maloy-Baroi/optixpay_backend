@@ -4,5 +4,67 @@ from app_withdraw.models.withdraw import Withdraw
 class WithdrawSerializer(serializers.ModelSerializer):
     class Meta:
         model = Withdraw
-        fields = '__all__'  # Use all fields, or specify specific fields if needed
-        # read_only_fields = ['merchant']
+        fields = [
+            'id',
+            'merchant_id',
+            'customer_id',
+            'bank',
+            'agent_id',
+            'order_id',
+            'oxp_id',
+            'txn_id',
+            'requested_amount',
+            'requested_currency',
+            'sent_amount',
+            'sent_currency',
+            'sender_account',
+            'receiver_account',
+            'agent_commission',
+            'merchant_commission',
+            'status'
+        ]
+
+    merchant_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    bank = serializers.PrimaryKeyRelatedField(read_only=True)
+    agent_id = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+    requested_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+    sent_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
+    status = serializers.ChoiceField(choices=Withdraw.status_choices)
+
+    def validate_customer_id(self, value):
+        # Example validation: customer ID must be non-empty
+        if not value:
+            raise serializers.ValidationError("Customer ID must be provided.")
+        return value
+
+    def validate(self, data):
+        # Add custom validation logic if necessary
+        return data
+
+
+class WithdrawSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Withdraw
+        fields = [
+            'id',
+            'merchant_id',
+            'customer_id',
+            'bank',
+            'agent_id',
+            'order_id',
+            'oxp_id',
+            'txn_id',
+            'requested_amount',
+            'requested_currency',
+            'sent_amount',
+            'sent_currency',
+            'sender_account',
+            'receiver_account',
+            'agent_commission',
+            'merchant_commission',
+            'status'
+        ]
+
+        # extra_kwargs = {
+        #     ""
+        # }

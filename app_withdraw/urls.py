@@ -1,8 +1,10 @@
 from django.urls import path
-from app_deposit.views.deposit import DepositAPIView
-from app_withdraw.views.withdraw import WithdrawAPIView, WithdrawListAPIView
+from app_withdraw.views.withdraw import WithdrawListAPIView, WithdrawCreateAPIView, \
+    WithdrawDeleteAPIView, WithdrawUpdateAPIView
 
 urlpatterns = [
-    path('withdraw/', WithdrawListAPIView.as_view(), name='deposit-list'),   # List and Create
-    path('withdraw/<int:pk>/', WithdrawAPIView.as_view(), name='deposit-detail'),  # Retrieve, Update, Delete
+    path('withdraws/', WithdrawListAPIView.as_view(), name='deposit-list'),   # List
+    path('withdraw/create/', WithdrawCreateAPIView.as_view(), name='deposit-create'),   # List
+    path('withdraw/update/<int:pk>/', WithdrawUpdateAPIView.as_view(), name='deposit-update'),  # Retrieve, Update, Delete
+    path('withdraw/delete/<int:pk>/', WithdrawDeleteAPIView.as_view(), name='deposit-delete'),  # Retrieve, Update, Delete
 ]

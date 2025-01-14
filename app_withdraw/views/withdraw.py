@@ -1,6 +1,7 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 
 from app_deposit.models.deposit import Deposit
 from app_withdraw.models.withdraw import Withdraw
@@ -15,47 +16,80 @@ from utils.common_response import CommonResponse
 
 
 class WithdrawListAPIView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
+    pagination_class = CustomPagination
 
     def get(self, request):
-        search_keyword = request.query_params.get('search_keyword', None)
+        try:
+            # Extract query parameters
+            page = request.query_params.get('page', 1)
+            page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+            withdraw_id = request.query_params.get('withdraw_id')
+            search_query = request.query_params.get('search', '')
+            search_status = request.query_params.get('status', '')
+            bank = request.query_params.get('bank', '')
+            is_active = request.query_params.get('is_active', True)
 
-        if search_keyword:
-            withdraws = Withdraw.objects.filter(
-                Q(customer_id__icontains=search_keyword) |
-                Q(order_id__icontains=search_keyword) |
-                Q(oxp_id__icontains=search_keyword) |
-                Q(txn_id__icontains=search_keyword) |
-                Q(sender_account__icontains=search_keyword) |
-                Q(receiver_account__icontains=search_keyword) |
-                Q(merchant_id__full_name__icontains=search_keyword) |  # Assuming 'name' is a field in Profile model
-                Q(bank__bank_name__icontains=search_keyword)  # Assuming 'name' is a field in BankModel
-            )
-        else:
-            # Get all withdraws
+            # Filter withdraws based on query parameters
             withdraws = Withdraw.objects.all()
 
-        # Instantiate the custom paginator
-        paginator = CustomPagination()
+            if withdraw_id:
+                try:
+                    withdraw = Withdraw.objects.get(id=withdraw_id)
+                    withdraws_serializers = WithdrawSerializer(withdraw)
+                    return CommonResponse(
+                        "success", withdraws_serializers.data, status.HTTP_200_OK, "Data Found!"
+                    )
+                except Withdraw.DoesNotExist:
+                    return CommonResponse("error", "withdraw not found", status.HTTP_204_NO_CONTENT)
 
-        # Apply pagination to the queryset
-        page = paginator.paginate_queryset(withdraws, request, view=self)
+            if search_query:
+                withdraws = withdraws.filter(
+                    Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
+                )
+            if search_status:
+                withdraws = withdraws.filter(status=search_status)
+            if bank:
+                withdraws = withdraws.filter(bank__icontains=bank)
+            if is_active:
+                withdraws = withdraws.filter(is_active=is_active)
 
-        if page is not None:
-            # Serialize page instead of entire queryset
-            serializer = WithdrawSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+            if not withdraws.exists():
+                return CommonResponse("error", "No withdraws found", status.HTTP_204_NO_CONTENT)
 
-        # If no page, meaning pagination failed or not needed, return all items
-        serializer = WithdrawSerializer(withdraws, many=True)
-        return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
+            # Apply pagination
+            paginator = self.pagination_class()
+            paginator.page_size = int(page_size)  # Override page size if provided
+            result_page = paginator.paginate_queryset(withdraws, request)
 
-    def post(self, request):
-        pass
+            if result_page is not None:
+                withdraws_serializers = WithdrawSerializer(result_page, many=True)
+                return paginator.get_paginated_response(withdraws_serializers.data)
+            else:
+                return CommonResponse("error", "No withdraws available", status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            return CommonResponse(
+                "error", str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "An error occurred while retrieving withdraw data"
+            )
 
 
-class WithdrawAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class WithdrawCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = WithdrawSerializer(data=request.data)
+        print(serializer.is_valid())
+        if serializer.is_valid():
+            serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
+        return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unable to create withdraw!")
+
+
+class WithdrawUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk=None):
         if pk:
             try:
@@ -65,14 +99,14 @@ class WithdrawAPIView(APIView):
             except Withdraw.DoesNotExist:
                 return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
         else:
-            return CommonResponse("error",{}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
+            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
 
     def put(self, request, pk=None):
         try:
             withdraw = Withdraw.objects.get(pk=pk)
             if not withdraw:
-                return CommonResponse("error",{}, status.HTTP_404_NOT_FOUND, "withdraw not found")
-            serializer = WithdrawSerializer(withdraw, data=request.data,context={'request': request}, partial=True)
+                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "withdraw not found")
+            serializer = WithdrawSerializer(withdraw, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Data Successfully!")
@@ -80,6 +114,9 @@ class WithdrawAPIView(APIView):
         except Withdraw.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
 
+
+class WithdrawDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk=None):
         try:
