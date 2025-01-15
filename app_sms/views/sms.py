@@ -6,9 +6,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from app_sms.models.sms import SMSManagement
-from app_sms.serializers.sms import SMSManagementSerializer
+from app_sms.serializers.sms import SMSManagementSerializer, SMSManagementUpdateSerializer
 from services.pagination import CustomPagination
+from services.token_generator import create_token
 from utils.common_response import CommonResponse
+
+
+class GenerateAccessToken(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        previous_token = request.data.get('token')
+
+        if not previous_token:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "There is no previous token.")
+
+        return CommonResponse("success", {"new_token": create_token(request.user)}, status.HTTP_200_OK, "Successfully generate access token.")
 
 
 class SMSListAPIView(APIView):
@@ -67,13 +80,14 @@ class SMSListAPIView(APIView):
 
 
 class SMSCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
             serializer = SMSManagementSerializer(data=request.data)
             if serializer.is_valid():
                 # Set the creator of the prepayment
-                serializer.save(status='Pending')
+                serializer.save(created_by=request.user, updated_by=request.user, status='Confirmed', is_active=True)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successful Created")
             else:
                 return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessful!")
@@ -86,8 +100,8 @@ class SMSUpdateAPIView(APIView):
 
     def put(self, request, pk):
         try:
-            prepayment = get_object_or_404(SMSManagement, pk=pk, is_active=True)
-            serializer = SMSManagementSerializer(prepayment, data=request.data, partial=True)
+            sms = get_object_or_404(SMSManagement, pk=pk)
+            serializer = SMSManagementUpdateSerializer(sms, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Record updated")
@@ -103,8 +117,8 @@ class SMSDeleteAPIView(APIView):
 
     def delete(self, request, pk):
         try:
-            prepayment = get_object_or_404(SMSManagement, pk=pk)
-            prepayment.soft_delete()
+            sms = get_object_or_404(SMSManagement, pk=pk)
+            sms.soft_delete()
 
             return CommonResponse("success", [], status.HTTP_200_OK, "Successfully deleted!")
         except SMSManagement.DoesNotExist:

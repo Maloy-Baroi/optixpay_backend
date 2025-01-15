@@ -1,3 +1,7 @@
+from datetime import timezone
+
+from django.utils.datetime_safe import datetime
+
 from core.models.BaseModel import BaseModel
 from django.db import models
 
