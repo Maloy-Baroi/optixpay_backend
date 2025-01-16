@@ -39,7 +39,6 @@ class PrepaymentUpdateSerializer(serializers.ModelSerializer):
         model = Prepayment
         fields = [
             'id',
-            'order_id',
             'agent_id',
             'transaction_hash',
             'amount_usdt',
