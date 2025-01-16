@@ -23,5 +23,5 @@ class Prepayment(BaseModel):
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
     def __str__(self):
-        return self.order_id
+        return self.agent_id
 
