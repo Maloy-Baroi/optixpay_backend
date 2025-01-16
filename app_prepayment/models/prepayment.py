@@ -22,6 +22,6 @@ class Prepayment(BaseModel):
     payment_id = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
-    def __str__(self):
-        return self.agent_id
+    class Meta:
+        db_table = 'prepayment'
 
