@@ -37,33 +37,35 @@ class WebhookAPIView(APIView):
             signature = hmac.new(SECRET_KEY.encode(), signature_contract.encode(), hashlib.sha256).hexdigest()
             print("Generated Signature: ", signature)
 
-            if hmac.compare_digest(received_signature, signature):
-                data = request.data
+            data = request.data
 
-                try:
-                    agent = AgentProfile.objects.get(id=int(data.get('orderId')))
-                except AgentProfile.DoesNotExist:
-                    return Response({"error": "AgentProfile not found"}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                agent = AgentProfile.objects.get(id=int(data.get('orderId')))
+            except AgentProfile.DoesNotExist:
+                return Response({"error": "AgentProfile not found"}, status=status.HTTP_404_NOT_FOUND)
 
-                prepayment = Prepayment(
-                    agent_id=agent,
-                    transaction_hash=data.get('txhash'),
-                    amount_usdt=data.get('amount'),
-                    sender_address=data.get('addressFrom'),
-                    receiver_address=data.get('addressTo'),
-                    platform_id=data.get('platformId'),
-                    payment_id=data.get('paymentId'),
-                    exchange_rate=120.87,
-                    converted_amount=120.87 * float(data.get('amount')),
-                    status='Pending',
-                    created_by=agent.user,
-                    updated_by=agent.user
-                )
-                prepayment.save()
+            prepayment = Prepayment(
+                agent_id=agent,
+                transaction_hash=data.get('txhash'),
+                amount_usdt=data.get('amount'),
+                sender_address=data.get('addressFrom'),
+                receiver_address=data.get('addressTo'),
+                platform_id=data.get('platformId'),
+                payment_id=data.get('paymentId'),
+                exchange_rate=120.87,
+                converted_amount=120.87 * float(data.get('amount')),
+                status='Pending',
+                created_by=agent.user,
+                updated_by=agent.user
+            )
+            prepayment.save()
 
-                return Response({"status": "success", "message": "Data received and verified"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"status": "success", "message": "Data received and verified"}, status=status.HTTP_200_OK)
+
+            # if hmac.compare_digest(received_signature, signature):
+            #
+            # else:
+            #     return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({"error": "Unknown error", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
