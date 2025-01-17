@@ -16,7 +16,7 @@ class GenerateAccessToken(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        return CommonResponse("success", {"new_token": create_token(request.user)}, status.HTTP_200_OK, "Successfully generate access token.")
+        return CommonResponse("success", create_token(request.user), status.HTTP_200_OK, "Successfully generate access token.")
 
 
 class SMSListAPIView(APIView):

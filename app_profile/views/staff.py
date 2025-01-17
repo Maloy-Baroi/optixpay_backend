@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from app_auth.models import CustomUser, Group
+from app_auth.models import CustomUser, Group, CustomGroup
 from app_profile.models.staff import StaffProfile
 from app_profile.serializers.profile import ProfileSerializer
 from app_profile.serializers.staff import StaffSerializer
@@ -93,7 +93,7 @@ class StaffCreateAPIView(APIView):
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
                 user.save()
-                staff_group, created = Group.objects.get_or_create(name=group)
+                staff_group, created = CustomGroup.objects.get_or_create(name=group)
                 user.groups.add(staff_group)
                 user.save()
 
