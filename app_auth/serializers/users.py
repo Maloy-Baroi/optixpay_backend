@@ -1,9 +1,10 @@
 # app_auth/serializers.py
 import random
 
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from app_auth.models import CustomUser  # Correct path to the CustomUser model
-from django.contrib.auth.models import Group, Permission
+from app_auth.models import CustomUser, CustomGroup, CustomPermission  # Correct path to the CustomUser model
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +23,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         self.context['otp'] = otp  # Save OTP to context for use in the view
         return user
 
+
 class OTPVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
@@ -32,7 +34,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'username', 'password', 'referral', 'create_date', 'write_date', 'is_staff', 'is_active']
+        fields = ['id', 'email', 'username', 'password', 'referral', 'create_date', 'write_date', 'is_staff',
+                  'is_active']
 
         extra_kwargs = {
             'referral': {'required': False},
@@ -56,13 +59,30 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return instance
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class ContentTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
-        fields = ['id', 'name']
+        model = ContentType
+        fields = ['id', 'app_label', 'model']
 
 
 class PermissionSerializer(serializers.ModelSerializer):
+    inclusive_models = ContentTypeSerializer(many=True, read_only=True)
+
     class Meta:
-        model = Permission
-        fields = ['id', 'name', 'codename', 'content_type']
+        model = CustomPermission
+        fields = ['id', 'permission_name', 'inclusive_models', 'permission_type']
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    all_permissions = PermissionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CustomGroup
+        fields = [
+            'id', 'name', 'all_permissions'
+        ]
+
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'all_permissions': {'required': False},
+        }

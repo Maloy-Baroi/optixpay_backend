@@ -146,22 +146,22 @@ class DepositAPIView(APIView):
                 serializer = DepositSerializer(deposit)
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
             except Deposit.DoesNotExist:
-                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
         else:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Data Not Found!")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Data Not Found!")
 
     def put(self, request, pk=None):
         try:
             deposit = Deposit.objects.get(pk=pk)
             if not deposit:
-                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "deposit not found")
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
             serializer = DepositSerializer(deposit, data=request.data,context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Updated")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Deposit.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
 
 
     def delete(self, request, pk=None):
@@ -170,4 +170,4 @@ class DepositAPIView(APIView):
             deposit.soft_delete()
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deposit deleted successfully")
         except Deposit.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")

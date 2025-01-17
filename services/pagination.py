@@ -19,7 +19,7 @@ class CustomPagination(PageNumberPagination):
         else:
             status_type = "error"
             message = "Data Not Found!"
-            http_status = status.HTTP_404_NOT_FOUND
+            http_status = status.HTTP_204_NO_CONTENT
 
         return CommonResponseForPaginator(status_type, {
             'next': self.get_next_link(),

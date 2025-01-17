@@ -42,7 +42,7 @@ class WebhookAPIView(APIView):
             try:
                 agent = AgentProfile.objects.get(unique_id=data.get('orderId'))
             except AgentProfile.DoesNotExist:
-                return Response({"error": "AgentProfile not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "AgentProfile not found"}, status=status.HTTP_204_NO_CONTENT)
 
             prepayment = Prepayment(
                 agent_id=agent,

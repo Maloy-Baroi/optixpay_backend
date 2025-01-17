@@ -1,6 +1,5 @@
 import random
 from multiprocessing import Process
-from django.contrib.auth.models import Group
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -9,8 +8,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from app_auth.models import CustomUser, UserVerificationToken
-from app_auth.serializers.users import UserRegistrationSerializer
+from app_auth.models import CustomUser, UserVerificationToken, CustomGroup
+from app_auth.serializers.users import UserRegistrationSerializer, PermissionSerializer
 from app_profile.models.agent import AgentProfile
 from services.isActiveUser import is_user_active
 from services.send_main import send_verification_email
@@ -85,13 +84,12 @@ class VerifyOTPView(APIView):
 
             if otp_provided == otp_cached.token:
                 user.is_active = True
-                agent_group, created = Group.objects.get_or_create(name='agent')  # Ensure the agent group exists
+                agent_group, created = CustomGroup.objects.get_or_create(name='agent')  # Ensure the agent group exists
                 user.groups.add(agent_group)  # Add the user to the agent group
                 user.save()
                 return CommonResponse("success", {},
                                       status.HTTP_200_OK, 'Email verified successfully!')
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, 'Invalid OTP')
-
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
@@ -133,14 +131,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
                 permissions = user.user_permissions.all()
 
-                # permission_serializers = PermissionSerializer(permissions, many=True)
+                permission_serializers = PermissionSerializer(permissions, many=True)
                 return CommonResponse("success", {
                     'refresh': str(refresh),
                     'access': access_token,
                     'groups': groups,
                     'username': user.username,
                     'email': user.email,
-                    # 'permissions': permission_serializers,
+                    'permissions': permission_serializers.data,
                     'prepayment_address': signature
                 }, status.HTTP_200_OK, "Login Successful!")
                 # If password is correct, proceed to issue the token

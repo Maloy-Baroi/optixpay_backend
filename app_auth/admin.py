@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 
-from app_auth.models import CustomUser, UserVerificationToken
+from app_auth.models import CustomUser, UserVerificationToken, CustomGroup, CustomPermission
 
 
 # Register your models here.
@@ -20,3 +20,5 @@ class UserVerificationTokenAdmin(admin.ModelAdmin):
 
 admin.site.register(UserVerificationToken, UserVerificationTokenAdmin)
 admin.site.register(Permission)
+admin.site.register(CustomPermission)
+admin.site.register(CustomGroup)

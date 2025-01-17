@@ -54,14 +54,14 @@ class ProfileRetrieveUpdateAPIView(APIView):
     def get(self, request, pk):
         profile = self.get_object(pk)
         if profile is None:
-            return CommonResponse('error', {}, status.HTTP_404_NOT_FOUND, 'Profile not found.')
+            return CommonResponse('error', {}, status.HTTP_204_NO_CONTENT, 'Profile not found.')
         serializer = ProfileSerializer(profile)
         return CommonResponse("success", data=serializer.data, status=status.HTTP_200_OK, message="Successfully retrieved!")
 
     def put(self, request, pk):
         profile = self.get_object(pk)
         if profile is None:
-            return CommonResponse('error', {}, status.HTTP_404_NOT_FOUND, 'Profile not found.')
+            return CommonResponse('error', {}, status.HTTP_204_NO_CONTENT, 'Profile not found.')
         serializer = ProfileSerializer(profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -71,6 +71,6 @@ class ProfileRetrieveUpdateAPIView(APIView):
     def delete(self, request, pk):
         profile = self.get_object(pk)
         if profile is None:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND,  'Profile not found.')
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT,  'Profile not found.')
         profile.soft_delete()
-        return CommonResponse("success",{}, status.HTTP_204_NO_CONTENT, "Successfully deleted!")
+        return CommonResponse("success",{}, status.HTTP_200_OK, "Successfully deleted!")

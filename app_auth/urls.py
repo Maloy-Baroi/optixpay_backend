@@ -1,5 +1,6 @@
 from django.urls import path
 
+from app_auth.views.groups import CustomGroupListAPIView, CustomGroupUpdateAPIView, CustomGroupDeleteAPIView
 from app_auth.views.permissions import PermissionListAPIView
 from app_auth.views.reset_password import SendOTPView, ResetPasswordAPIView, VerifyOTPAPIVIew
 from app_auth.views.users import CustomTokenObtainPairView, CustomTokenRefreshView, VerifyOTPView, UserRegistrationView, \
@@ -18,4 +19,9 @@ urlpatterns = [
     path('login/token/', CustomTokenObtainPairView.as_view(), name='custom_token_obtain_pair'),
     path('login/token/refresh/', CustomTokenRefreshView.as_view(), name='custom_token_refresh'),
     path('permissions/', PermissionListAPIView.as_view(), name='permissions'),
+    path('permissions/create/', PermissionListAPIView.as_view(), name='permissions-create'),
+    path('groups/', CustomGroupListAPIView.as_view(), name='groups'),
+    path('groups/create/', CustomGroupListAPIView.as_view(), name='groups-create'),
+    path('groups/update/<int:group_id>/', CustomGroupUpdateAPIView.as_view(), name='groups-update'),
+    path('groups/delete/<int:group_id>/', CustomGroupDeleteAPIView.as_view(), name='groups-delete'),
 ]
