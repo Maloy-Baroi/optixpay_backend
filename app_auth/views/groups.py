@@ -1,8 +1,10 @@
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from app_auth.models import CustomGroup
+from app_auth.models import CustomGroup, CustomPermission
 from app_auth.serializers.users import GroupSerializer
 from services.is_admin import IsAdminUser
 from utils.common_response import CommonResponse
@@ -43,24 +45,33 @@ class CustomGroupUpdateAPIView(APIView):
     permission_classes = (IsAuthenticated, IsAdminUser)
 
     def put(self, request, pk):
-        try:
-            group_id = pk
-            group = CustomGroup.objects.filter(id=group_id)
+        with transaction.atomic():  # Use transaction to manage database operations atomically
+            group = get_object_or_404(CustomGroup, id=pk)  # Fetch group or return 404
+
             group_name = request.data.get("name")
-            permissions = request.data.get("permissions", [])
+            permissions_ids = request.data.get("permissions", [])
 
-            if not group.exists():
-                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Group not found!")
+            try:
+                if group_name:
+                    group.name = group_name
 
-            group = CustomGroup.objects.get(id=group_id)
-            if group_name:
-                group.name = group_name
-            if permissions:
-                group.permissions = permissions
-            group.save()
-            return CommonResponse("success", {}, status.HTTP_200_OK, "Data Updated Successfully!")
-        except Exception as e:
-            return CommonResponse("error", str(e), status.HTTP_204_NO_CONTENT, "Data Not Found")
+                if permissions_ids:
+                    # Ensure all provided IDs are valid CustomPermissions
+                    valid_permissions = CustomPermission.objects.filter(id__in=permissions_ids)
+                    if valid_permissions.count() != len(permissions_ids):
+                        # If the counts do not match, some IDs are invalid
+                        return CommonResponse("error",  {},
+                                        status.HTTP_400_BAD_REQUEST, "Invalid permission IDs provided")
+
+                    # Set new permissions, replacing existing ones
+                    group.all_permissions.set(valid_permissions)
+
+                group.save()
+                group_serializers = GroupSerializer(group)
+                return CommonResponse("success",  group_serializers.data, status.HTTP_200_OK, "Data Updated Successfully!")
+
+            except Exception as e:
+                return CommonResponse("error",{}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
 
