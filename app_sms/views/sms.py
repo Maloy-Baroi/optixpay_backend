@@ -16,11 +16,6 @@ class GenerateAccessToken(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        previous_token = request.data.get('token')
-
-        if not previous_token:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "There is no previous token.")
-
         return CommonResponse("success", {"new_token": create_token(request.user)}, status.HTTP_200_OK, "Successfully generate access token.")
 
 

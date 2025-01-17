@@ -11,6 +11,8 @@ from app_withdraw.serializers.withdraw import WithdrawSerializer
 
 from app_profile.models.profile import Profile
 from django.db.models import Q
+
+from services.is_admin import IsAdminUser, IsMerchantUser
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -93,8 +95,11 @@ class WithdrawUpdateAPIView(APIView):
     def put(self, request, pk=None):
         try:
             withdraw = Withdraw.objects.get(pk=pk)
-            if not withdraw:
-                return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "withdraw not found")
+            # Check permissions for the object based on user type and status
+            if not self.check_object_permissions(request, withdraw):
+                return CommonResponse("error", {}, status.HTTP_403_FORBIDDEN,
+                                      "Update not allowed based on your user group and withdraw status.")
+
             serializer = WithdrawSerializer(withdraw, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -103,9 +108,15 @@ class WithdrawUpdateAPIView(APIView):
         except Withdraw.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
 
+    def check_object_permissions(self, request, obj):
+        for permission in self.get_permissions():
+            if hasattr(permission, 'has_object_permission'):
+                if not permission.has_object_permission(request, self, obj):
+                    return False
+        return True
 
 class WithdrawDeleteAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def delete(self, request, pk=None):
         try:
