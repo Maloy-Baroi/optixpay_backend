@@ -8,13 +8,13 @@ def create_token(user):
     access_token = refresh.access_token
 
     # Manually set the expiration time for the access token
-    custom_lifetime = timedelta(days=180)
+    custom_lifetime = timedelta(days=1000)
     access_token.set_exp(lifetime=custom_lifetime)
 
     # Explicitly include user ID
     access_token['user_id'] = user.id
+    mobile_auth_url = f"/api/v1/app-sms/regenerate-token/{str(access_token)}"
 
     return {
-        'refresh': str(refresh),
-        'access': str(access_token),
+        'mobile_auth_url': mobile_auth_url
     }
