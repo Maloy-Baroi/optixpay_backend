@@ -22,6 +22,6 @@ urlpatterns = [
     path('permissions/create/', PermissionListAPIView.as_view(), name='permissions-create'),
     path('groups/', CustomGroupListAPIView.as_view(), name='groups'),
     path('groups/create/', CustomGroupListAPIView.as_view(), name='groups-create'),
-    path('groups/update/<int:group_id>/', CustomGroupUpdateAPIView.as_view(), name='groups-update'),
-    path('groups/delete/<int:group_id>/', CustomGroupDeleteAPIView.as_view(), name='groups-delete'),
+    path('groups/update/<int:pk>/', CustomGroupUpdateAPIView.as_view(), name='groups-update'),
+    path('groups/delete/<int:pk>/', CustomGroupDeleteAPIView.as_view(), name='groups-delete'),
 ]
