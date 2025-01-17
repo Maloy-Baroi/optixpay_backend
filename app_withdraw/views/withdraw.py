@@ -82,7 +82,6 @@ class WithdrawCreateAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = WithdrawSerializer(data=request.data)
-        print(serializer.is_valid())
         if serializer.is_valid():
             serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
@@ -106,7 +105,7 @@ class WithdrawUpdateAPIView(APIView):
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Data Successfully!")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Withdraw.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Withdraw not found")
 
     def check_object_permissions(self, request, obj):
         for permission in self.get_permissions():
@@ -126,4 +125,4 @@ class WithdrawDeleteAPIView(APIView):
             withdraw.soft_delete()
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Withdraw deleted successfully")
         except Withdraw.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Withdraw not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Withdraw not found")

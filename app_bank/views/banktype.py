@@ -88,7 +88,7 @@ class BankTypeUpdateAPIView(APIView):
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Bank Type Successfully Updated")
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except BankTypeModel.DoesNotExist:
-            return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Not found")
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Not found")
 
 
 class BankTypeDeleteAPIView(APIView):

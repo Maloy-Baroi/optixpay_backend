@@ -1,37 +1,54 @@
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin, Group, Permission, GroupManager
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 
-# class CustomPermission(Permission):
-#     permission_name = models.CharField(max_length=255, unique=True)
-#     inclusive_models = models.TextField(default="", blank=True)
-#
-#     def __str__(self):
-#         return self.name
-#
-#
-# class CustomGroup(Group):
-#     group_name = models.CharField(_("name"), max_length=150, unique=True)
-#     all_permissions = models.ManyToManyField(
-#         CustomPermission,
-#         verbose_name=_("permissions"),
-#         blank=True,
-#     )
-#
-#     objects = GroupManager()
-#
-#     class Meta:
-#         verbose_name = _("custom_group")
-#         verbose_name_plural = _("custom_groups")
-#
-#     def __str__(self):
-#         return self.name
-#
-#     def natural_key(self):
-#         return (self.name,)
+class CustomPermission(models.Model):
+    PERMISSION_TYPE = [
+        ('Create', 'Create'),
+        ('Read', 'Read'),
+        ('Update', 'Update'),
+        ('Delete', 'Delete'),
+    ]
+
+    permission_name = models.CharField(max_length=255)
+    inclusive_models = models.ManyToManyField(
+        ContentType,
+        verbose_name=_("content type"),
+        blank=True  # Ensures that it's okay for no ContentType to be associated initially
+    )
+    permission_type = models.CharField(max_length=255, choices=PERMISSION_TYPE, default='Read')
+
+    class Meta:
+        unique_together = ('permission_name', 'permission_type')
+
+    def __str__(self):
+        # This will output just the permission name and type
+        return f"{self.permission_name} | {self.permission_type}"
+
+
+class CustomGroup(Group):
+    all_permissions = models.ManyToManyField(
+        CustomPermission,
+        verbose_name=_("all_permissions"),
+        blank=True,
+    )
+
+    objects = GroupManager()
+
+    class Meta:
+        verbose_name = _("custom_group")
+        verbose_name_plural = _("custom_groups")
+
+    def __str__(self):
+        return self.name
+
+    def natural_key(self):
+        return (self.name,)
+
 
 # app_auth/models.py
 class CustomUserManager(BaseUserManager):
@@ -88,19 +105,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     groups = models.ManyToManyField(
-        Group,
+        CustomGroup,
         related_name='custom_user_set',  # Custom related name to avoid clash
         blank=True,
         help_text='The groups this user belongs to.',
         verbose_name='groups',
-    )
-
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='custom_user_permissions',  # Custom related name to avoid clash
-        blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
     )
 
     def save(self, *args, **kwargs):

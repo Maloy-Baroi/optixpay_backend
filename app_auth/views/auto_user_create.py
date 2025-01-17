@@ -1,9 +1,8 @@
-from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.views import APIView
 
-from app_auth.models import CustomUser
+from app_auth.models import CustomUser, CustomGroup
 from app_auth.serializers.users import CustomUserSerializer
 from utils.common_response import CommonResponse
 
@@ -20,7 +19,7 @@ class AutoCreateUserView(APIView):
 
         try:
             # Check if the group exists or create a new one
-            group, created = Group.objects.get_or_create(name=group_name)
+            group, created = CustomGroup.objects.get_or_create(name=group_name)
 
             # Create the user and save them to the database
             user = CustomUser(email=email, username=username, is_active=True)

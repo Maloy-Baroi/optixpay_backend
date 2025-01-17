@@ -1,13 +1,10 @@
-from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
-from pycparser.plyparser import Coord
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
 
-from app_auth.models import CustomUser
+from app_auth.models import CustomUser, CustomGroup
 from app_profile.models.agent import AgentProfile
 from app_profile.serializers.agent import AgentProfileSerializer
 from services.pagination import CustomPagination
@@ -89,7 +86,7 @@ class AgentProfileCreateAPIView(APIView):
                 user = CustomUser(email=email, username=username)
                 user.set_password(password)
                 user.save()
-                agent_group, created = Group.objects.get_or_create(name='agent')
+                agent_group, created = CustomGroup.objects.get_or_create(name='agent')
                 user.groups.add(agent_group)
                 user.save()
 
