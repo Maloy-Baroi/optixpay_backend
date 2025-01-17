@@ -1,3 +1,4 @@
+from pkg_resources import require
 from rest_framework import serializers
 from app_withdraw.models.withdraw import Withdraw
 
@@ -42,29 +43,40 @@ class WithdrawSerializer(serializers.ModelSerializer):
         return data
 
 
-class WithdrawSerializer(serializers.ModelSerializer):
+class WithdrawCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Withdraw
         fields = [
             'id',
             'merchant_id',
-            'customer_id',
+            'customer_id', # yes
             'bank',
             'agent_id',
             'order_id',
             'oxp_id',
             'txn_id',
-            'requested_amount',
-            'requested_currency',
+            'requested_amount', # yes
+            'requested_currency', # yes
             'sent_amount',
             'sent_currency',
-            'sender_account',
+            'sender_account', # yes
             'receiver_account',
             'agent_commission',
             'merchant_commission',
-            'status'
+            'status' # yes
         ]
 
-        # extra_kwargs = {
-        #     ""
-        # }
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'merchant_id': {'read_only': True, 'required': False},
+            'bank': {'read_only': True, 'required': False},
+            'agent_id': {'read_only': True, 'required': False},
+            'order_id': {'read_only': True, 'required': False},
+            'oxp_id': {'read_only': True, 'required': False},
+            'txn_id': {'read_only': True, 'required': False},
+            'sent_amount': {'read_only': True, 'required': False},
+            'sent_currency': {'read_only': True, 'required': False},
+            'receiver_account': {'read_only': True, 'required': False},
+            'agent_commission': {'read_only': True, 'required': False},
+            'merchant_commission': {'read_only': True, 'required': False},
+        }
