@@ -21,9 +21,8 @@ class AgentProfile(BaseModel):
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Active')
 
     def save(self, *args, **kwargs):
-        if self.unique_id is None:
-            self.unique_id = f"agent_{generate_short_uuid()}"
-            super(AgentProfile, self).save(*args, **kwargs)
-        else:
-            super(AgentProfile, self).save(*args, **kwargs)
+        # Only generate a new unique_id if it doesn't already exist
+        if not self.unique_id:
+            self.unique_id = f"agent{generate_short_uuid()}"
+        super(AgentProfile, self).save(*args, **kwargs)
 
