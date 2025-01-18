@@ -21,9 +21,6 @@ SECRET_KEY = 'ebb620-d11037-56c184-d69d9e-f04a7'
 
 # Assuming SECRET_KEY and other constants are defined and imported correctly
 class WebhookAPIView(APIView):
-    """
-    Handle webhook calls with signature verification.
-    """
     permission_classes = [AllowAny]  # This allows the endpoint to be accessed without authentication
 
     def post(self, request):
@@ -61,11 +58,6 @@ class WebhookAPIView(APIView):
             prepayment.save()
 
             return Response({"status": "success", "message": "Data received and verified"}, status=status.HTTP_200_OK)
-
-            # if hmac.compare_digest(received_signature, signature):
-            #
-            # else:
-            #     return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({"error": "Unknown error", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

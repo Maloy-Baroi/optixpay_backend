@@ -101,3 +101,5 @@ class BankTypeDeleteAPIView(APIView):
             return CommonResponse("success", "Deleted successfully", status.HTTP_204_NO_CONTENT, "Bank Type Deleted!")
         except BankTypeModel.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No Content Found")
+
+

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'app_mobile',
     'app_prepayment',
     'app_sms',
+    'core',
 
     # Additional Libraries
     'rest_framework',
