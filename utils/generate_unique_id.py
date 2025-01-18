@@ -7,4 +7,4 @@ def generate_short_uuid():
     uuid_str = str(uuid.uuid4())
     hash_object = hashlib.sha256(uuid_str.encode())
     hex_digest = hash_object.hexdigest()
-    return hex_digest[:10]
+    return hex_digest[:12]

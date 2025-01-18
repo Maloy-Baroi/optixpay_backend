@@ -44,9 +44,7 @@ class AgentBankModel(BaseModel):
     # Agent
     agent = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name="banks_agent", help_text="Agent linked to the bank")
     account_number = models.CharField(
-        max_length=15,
-        validators=[RegexValidator(r'^\+880\d{9,10}$', message="Account number must start with +880 and contain 9-10 digits")],
-        help_text="Account number in the format +880XXXXXXXXX"
+        max_length=50,
     )
     minimum_amount = models.FloatField(
         validators=[MinValueValidator(1.00)],

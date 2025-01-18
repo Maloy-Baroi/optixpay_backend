@@ -31,15 +31,9 @@ class Withdraw(BaseModel):
     agent_commission = models.FloatField(default=0.0)  # Agent commission
     merchant_commission = models.FloatField(default=0.0)  # Merchant commission
     status_choices = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
+        ('Assigned', 'Assigned'),
         ('Successful', 'Successful'),
         ('Failed', 'Failed'),
-        ('Cancelled', 'Cancelled'),
-        ('Expired', 'Expired'),
-        ('Under Review', 'Under Review'),
-        ('On Hold', 'On Hold'),
-        ('Declined', 'Declined'),
     ]
     status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
 

@@ -20,3 +20,7 @@ class BankTypeModelSerializer(serializers.ModelSerializer):
         validated_data['updated_by'] = user
         return super().update(instance, validated_data)
 
+
+class BankTypeOnlyNameSerializer(serializers.Serializer):
+    name = serializers.CharField()
+

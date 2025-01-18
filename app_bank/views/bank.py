@@ -32,8 +32,8 @@ class BankListCreateAPIView(APIView):
             if serializer.is_valid() and profile:
                 serializer.save(agent=profile, created_by=request.user,
                                 updated_by=request.user, is_active=True)  # Will automatically set agent and bank_unique_id
-                return CommonResponse("error", serializer.data, status.HTTP_201_CREATED, "Created Successfully")
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Created Successfully")
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Created Unsuccessful!")
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
