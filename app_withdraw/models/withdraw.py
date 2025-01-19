@@ -36,6 +36,9 @@ class Withdraw(BaseModel):
         ('Failed', 'Failed'),
     ]
     status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
+    success_callbackurl = models.CharField(max_length=255, null=True, blank=True)
+    failed_callbackurl = models.CharField(max_length=255, null=True, blank=True)
+    cancel_callbackurl = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Deposit {self.oxp_id} - {self.status}"

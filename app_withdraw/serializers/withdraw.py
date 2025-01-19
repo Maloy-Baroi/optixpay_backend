@@ -100,6 +100,7 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 user = this_request.user
                 merchant_id = MerchantProfile.objects.filter(user=user).first()
                 bank_name = this_request.data.pop('bank_name', None)
+                sender_currency = validated_data.get('sender_currency')
                 validated_data['merchant_id'] = merchant_id
             else:
                 raise ValueError("Request object is missing in serializer context")
