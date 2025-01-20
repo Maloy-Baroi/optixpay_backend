@@ -54,7 +54,7 @@ class Profile(BaseModel):
 
     # Fields
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    unique_id = models.CharField(max_length=100, unique=True, default=f"agent_{generate_short_uuid()}")
+    # unique_id = models.CharField(max_length=100, unique=True, default=f"agent_{generate_short_uuid()}")
     profile_type = models.CharField(max_length=20, choices=PROFILE_CHOICES, verbose_name="Profile_type",default='Agent')
     full_name = models.CharField(max_length=255, verbose_name="Full Name")
     country = models.CharField(max_length=25, choices=COUNTRY_CHOICES, verbose_name="Country")

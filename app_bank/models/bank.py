@@ -13,6 +13,7 @@ class BankTypeModel(BaseModel):
         ('p2c', 'Peer-to-Customer'),
     ]
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type")
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, help_text="Currency of the bank type")
     is_active = models.BooleanField(default=True)
 
 
@@ -76,6 +77,11 @@ class AgentBankModel(BaseModel):
         default=0.0,
         help_text="Monthly usage so far"
     )
+
+    withdraw_commission = models.FloatField(default=5.00)
+    deposit_commission = models.FloatField(default=10.00)
+
+    balance = models.FloatField(default=0.0, help_text="Balance")
     # App Key
     app_key = models.CharField(max_length=255, help_text="API key for the application")
     # Secret Key

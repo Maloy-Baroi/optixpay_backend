@@ -10,7 +10,7 @@ from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 
 from app_deposit.serializers.deposit import DepositSerializer
-from app_withdraw.serializers.withdraw import WithdrawSerializer, WithdrawCreateSerializer
+from app_withdraw.serializers.withdraw import WithdrawSerializer, WithdrawCreateSerializer, WithdrawUpdateSerializer
 
 from app_profile.models.profile import Profile
 from django.db.models import Q
@@ -84,17 +84,23 @@ class WithdrawListAPIView(APIView):
 
 
 class WithdrawCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsMerchantUser]
+    # permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         try:
-            serializer = WithdrawCreateSerializer(data=request.data, context={'request': request})
+            # Access headers from META
+            app_key = request.query_params.get('app_key', None)
+            secret_key = request.query_params.get('secret_key', None)
+            if app_key is None and secret_key is None:
+                return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
+            serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': app_key, 'secret_key': secret_key})
             if serializer.is_valid():
-                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unable to create withdraw request!")
         except Exception as e:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Failed to create withdraw request!")
+            print("Error: ", e)
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
 class WithdrawUpdateAPIView(APIView):
@@ -122,9 +128,9 @@ class WithdrawUpdateAPIView(APIView):
             # if not self._check_transaction_id_validity(transaction_id):
             #     return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Transaction already exists!")
 
-            serializer = WithdrawSerializer(withdraw, data=request.data, context={'request': request}, partial=True)
+            serializer = WithdrawUpdateSerializer(withdraw, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(updated_by=request.user)
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Data Successfully!")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Withdraw.DoesNotExist:

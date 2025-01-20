@@ -3,7 +3,6 @@ import secrets
 
 from app_auth.models import CustomUser
 from app_bank.models.bank import BankTypeModel
-from app_profile.models.wallet import MerchantWallet
 from core.models.BaseModel import BaseModel
 from django.db import models
 
@@ -24,9 +23,10 @@ class MerchantProfile(BaseModel):
     logo = models.ImageField(upload_to='merchant_logos')
     payment_methods = models.ManyToManyField(BankTypeModel, related_name='merchant_payment_method', blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Active')
-    merchant_wallet = models.ManyToManyField(MerchantWallet, related_name='merchant_profiles', blank=True)
+    merchant_wallet = models.ManyToManyField('app_profile.MerchantWallet', related_name='merchant_profiles', blank=True)
     app_key = models.CharField(max_length=255)
     secret_key = models.CharField(max_length=255)
+    is_negative_transaction_allowed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.secret_key:  # Generate only if not already set
