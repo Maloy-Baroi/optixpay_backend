@@ -8,12 +8,9 @@ from django.db import models
 
 class SMSManagement(BaseModel):
     STATUS_CHOICES = [
-        ('Confirmed', 'Confirmed'),
-        ('Pending', 'Pending'),
-        ('Refused', 'Refused'),
-        ('Refused', 'Refused'),
-        ('Claimed', 'Claimed'),
-        ('Unclaimed', 'Unclaimed'),
+        ('confirmed', 'confirmed'),
+        ('claimed', 'claimed'),
+        ('unclaimed', 'unclaimed'),
     ]
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)

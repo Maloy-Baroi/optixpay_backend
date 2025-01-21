@@ -11,7 +11,7 @@ from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
 
-class BankListCreateAPIView(APIView):
+class BankListAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
 
@@ -23,6 +23,8 @@ class BankListCreateAPIView(APIView):
             return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Fetched Success!")
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
+class BankCreateAPIView(APIView):
 
     def post(self, request):
         try:

@@ -7,9 +7,9 @@ from utils.generate_unique_id import generate_short_uuid
 
 class StaffProfile(BaseModel):
     STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Pending', 'Pending'),
-        ('Hold', 'Hold'),
+        ('active', 'active'),
+        ('pending', 'pending'),
+        ('hold', 'hold'),
     ]
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='staff')

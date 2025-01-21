@@ -46,10 +46,10 @@ class Profile(BaseModel):
     ]
 
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Active', 'Active'),
-        ('Rejected', 'Rejected'),
-        ('Hold', 'Hold'),
+        ('pending', 'pending'),
+        ('active', 'active'),
+        ('rejected', 'rejected'),
+        ('hold', 'hold'),
     ]
 
     # Fields

@@ -6,9 +6,9 @@ from core.models.BaseModel import BaseModel
 
 class Settlement(BaseModel):
     STATUS_CHOICES = [
-        ('complete', 'Complete'),
-        ('pending', 'Pending'),
-        ('failed', 'Failed'),
+        ('complete', 'complete'),
+        ('pending', 'pending'),
+        ('failed', 'failed'),
     ]
 
     settlement_id = models.CharField(max_length=20, unique=True)
