@@ -1,6 +1,7 @@
 from random import choice
 
 from PIL.ImageChops import difference
+from django.db import transaction
 from django.db.models import Q
 from pkg_resources import require
 from requests import request
@@ -11,11 +12,14 @@ from app_bank.models.bank import BankTypeModel, AgentBankModel
 from app_deposit.models.deposit import Currency
 from app_profile.models.agent import AgentProfile
 from app_profile.models.merchant import MerchantProfile
+from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
+from core.models.InValidTransactionId import InvalidTransactionId
 from utils.common_response import CommonResponse
 from utils.generate_order_id import generate_order_id
 from utils.optixpay_id_generator import generate_opx_id
 from utils.withdraw_commission_calculation import calculate_balances_for_withdraw
+from utils.withdraw_verify_by_sms import verify_by_sms
 
 
 class WithdrawSerializer(serializers.ModelSerializer):
@@ -141,7 +145,6 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 else:
                     # Filter merchant_wallets linked to this profile with the specified base currency
                     wallet = merchant_id.merchant_wallet.filter(wallet_base_currency=preferred_currency_id).first()
-                    print(wallet)
 
                     # Calculate the total balance for all wallets with the base currency
                     total_balance = wallet.balance
@@ -201,11 +204,12 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 updated_by=validated_data['updated_by'],
             )
 
-            merchant_new_balance, agent_new_balance, merchant_commission_amount_n_balance, agent_commission_amount_n_balance = calculate_balances_for_withdraw(requested_amount=requested_amount,
-                                                                                      merchant_balance=wallet.balance,
-                                                                                      agent_balance=agent_balance,
-                                                                                      merchant_commission=merchant_withdraw_commission,
-                                                                                      agent_commission=agent_withdraw_commission)
+            merchant_new_balance, agent_new_balance, merchant_commission_amount_n_balance, agent_commission_amount_n_balance = calculate_balances_for_withdraw(
+                requested_amount=requested_amount,
+                merchant_balance=wallet.balance,
+                agent_balance=agent_balance,
+                merchant_commission=merchant_withdraw_commission,
+                agent_commission=agent_withdraw_commission)
 
             wallet.balance = merchant_new_balance
             wallet.save()
@@ -273,7 +277,8 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         if not request:
-            raise serializers.ValidationError("Request context is required.")
+            raise serializers.ValidationError({"status": "error", "data": {},
+                                               "message": "Request context is required."})
 
         user = request.user
 
@@ -286,17 +291,39 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(f"Agents are not allowed to update {field}.")
             instance.status = validated_data.get('status', instance.status)
 
-
             if validated_data.get('status') and validated_data.get('status') == 'Successful':
-                instance.txn_id = validated_data.get('transaction_id', instance.txn_id)
+                instance.txn_id = validated_data.get('txn_id', instance.txn_id)
+                withdraw_sender_account = instance.sender_account
+                withdraw_requested_amount = instance.requested_amount
+                withdraw_verify = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id, account=withdraw_sender_account)
+                if not withdraw_verify:
+                    raise serializers.ValidationError({"status": "error", "data": {}, "message": "Transaction verification failed. Please contact to the administrator."})
 
                 agent_balance = instance.agent_balance_should_be
                 withdraw_agent_bank = instance.bank
                 agent_bank = AgentBankModel.objects.get(id=withdraw_agent_bank.id)
                 agent_bank.balance = agent_balance
-                agent_bank.save()
 
-                instance.save()
+
+                instance.sent_currency = agent_bank.bank_type.currency
+                instance.sent_amount = instance.requested_amount
+
+                sms = SMSManagement.objects.get(txn_id=instance.txn_id)
+                sms.status = 'Claimed'
+
+                invalid_txn_id = InvalidTransactionId(txn_id=instance.txn_id)
+
+                try:
+                    with transaction.atomic():
+                        instance.save()
+                        agent_bank.save()
+                        sms.save()
+                        invalid_txn_id.save()
+                except Exception as e:
+                    # Optionally, re-raise the exception if you want to propagate it
+                    raise serializers.ValidationError({"status": "error", "data": {},
+                                                       "message": "An error occurred: {str(e)}"})
+
             else:
                 merchant_id = MerchantProfile.objects.get(id=instance.merchant_id.id)
                 preferred_currency_id = instance.requested_currency
@@ -312,7 +339,7 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                 setattr(instance, field, value)
             instance.save()
         else:
-            raise serializers.ValidationError("You do not have permission to update this record.")
+            raise serializers.ValidationError({"status": "error", "data": {},
+                                               "message": "You do not have permission to update this record."})
 
         return instance
-

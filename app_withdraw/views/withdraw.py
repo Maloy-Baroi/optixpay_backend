@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,6 +7,7 @@ from rest_framework import status
 from app_bank.models.bank import BankTypeModel
 from app_bank.serializers.banktype import BankTypeModelSerializer, BankTypeOnlyNameSerializer
 from app_deposit.models.deposit import Deposit
+from app_profile.models.merchant import MerchantProfile
 from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 
@@ -84,6 +86,30 @@ class WithdrawListAPIView(APIView):
 
 
 class WithdrawCreateAPIView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # # Access headers from META
+            # app_key = request.query_params.get('app_key', None)
+            # secret_key = request.query_params.get('secret_key', None)
+            # if app_key is None and secret_key is None:
+            #     return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
+            if request.user.groups.filter(name='admin').exists():
+                merchant_id = request.data.get('merchant_id')
+                merchant = MerchantProfile.objects.filter(id=merchant_id).first()
+            else:
+                merchant = MerchantProfile.objects.filter(user=request.user).first()
+
+            serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': merchant.app_key, 'secret_key': merchant.secret_key})
+            if serializer.is_valid():
+                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
+            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unable to create withdraw request!")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
+class WithdrawCreateFromExternalAPIView(APIView):
     # permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -91,15 +117,18 @@ class WithdrawCreateAPIView(APIView):
             # Access headers from META
             app_key = request.query_params.get('app_key', None)
             secret_key = request.query_params.get('secret_key', None)
-            if app_key is None and secret_key is None:
+            if app_key is None or secret_key is None:
                 return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
+            else:
+                merchant = MerchantProfile.objects.filter(app_key=app_key, secret_key=secret_key).first()
+                loggedin_user = merchant.user
+
             serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': app_key, 'secret_key': secret_key})
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(created_by=loggedin_user, updated_by=loggedin_user, is_active=True)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unable to create withdraw request!")
         except Exception as e:
-            print("Error: ", e)
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
@@ -109,15 +138,14 @@ class WithdrawUpdateAPIView(APIView):
     def _check_transaction_id_validity(self, transaction_id):
         if transaction_id is None:
             return False
-
         if Withdraw.objects.filter(txn_id=transaction_id).exists():
             return False
         if InvalidTransactionId.objects.filter(txn_id=transaction_id).exists():
             return False
-        # if SMSManagement.objects.filter(trx_id=transaction_id).exists() and not InvalidTransactionId.objects.filter(trx_id=transaction_id).exists():
-        #     return True
         if Deposit.objects.filter(txn_id=transaction_id).exists():
             return False
+
+        return True
 
 
     def put(self, request, pk=None):
@@ -125,14 +153,18 @@ class WithdrawUpdateAPIView(APIView):
             withdraw = Withdraw.objects.get(pk=pk)
             transaction_id = request.data.get('txn_id', None)
 
-            # if not self._check_transaction_id_validity(transaction_id):
-            #     return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Transaction already exists!")
+            if not self._check_transaction_id_validity(transaction_id):
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Transaction already exists!")
 
             serializer = WithdrawUpdateSerializer(withdraw, data=request.data, context={'request': request}, partial=True)
-            if serializer.is_valid():
+            try:
+                serializer.is_valid(raise_exception=True)
                 serializer.save(updated_by=request.user)
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Updated Data Successfully!")
-            return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
+            except ValidationError as e:
+                # Handling the specific ValidationError raised from serializer
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
         except Withdraw.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Withdraw not found")
 

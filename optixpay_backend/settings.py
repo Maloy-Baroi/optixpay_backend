@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'app_prepayment',
     'app_sms',
     'core',
+    'app_settlement',
 
     # Additional Libraries
     'rest_framework',

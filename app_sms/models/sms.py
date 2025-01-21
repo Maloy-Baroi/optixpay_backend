@@ -11,15 +11,18 @@ class SMSManagement(BaseModel):
         ('Confirmed', 'Confirmed'),
         ('Pending', 'Pending'),
         ('Refused', 'Refused'),
+        ('Refused', 'Refused'),
+        ('Claimed', 'Claimed'),
+        ('Unclaimed', 'Unclaimed'),
     ]
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     sender = models.CharField(max_length=20)
     fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
-    trx_id = models.CharField(max_length=20, unique=True)
+    txn_id = models.CharField(max_length=20, unique=True)
     send_date = models.DateTimeField()
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Unclaimed')
 
     class Meta:
         db_table = 'sms_table'
