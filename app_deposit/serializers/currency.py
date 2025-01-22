@@ -19,3 +19,7 @@ class CurrencySerializer(serializers.ModelSerializer):
         # if not value.isalnum():
         #     raise serializers.ValidationError("The name must contain only alphanumeric characters.")
         return value
+
+    def create(self, validated_data):
+
+        currency = Currency.objects.get()

@@ -12,8 +12,8 @@ from utils.currencies import get_default_currency
 class BankTypeModel(BaseModel):
     name = models.CharField(max_length=50, help_text="Name of the bank type, e.g., Bkash, Rocket, Nagad")
     CATEGORY_CHOICES = [
-        ('p2p', 'Peer-to-Peer'),
-        ('p2c', 'Peer-to-Customer'),
+        ('p2p', 'p2p'),
+        ('p2c', 'p2c'),
     ]
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type", default=get_default_currency())
     currency = models.ForeignKey('app_deposit.Currency', on_delete=models.DO_NOTHING, null=True)
@@ -33,6 +33,12 @@ class BankTypeModel(BaseModel):
                 name='unique_name_category'
             )
         ]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.lower()
+        self.category = self.category.lower()
+
+        super(BankTypeModel, self).save(*args, **kwargs)
 
 
 class AgentBankModel(BaseModel):
