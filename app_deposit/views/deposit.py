@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from app_deposit.models.deposit import Deposit
-from app_deposit.serializers.deposit import DepositSerializer, DepositListSerializer
+from app_deposit.serializers.deposit import DepositListSerializer, DepositCreateSerializer, DepositSerializer
 
 from app_profile.models.profile import Profile
 from services.pagination import CustomPagination
@@ -28,38 +28,6 @@ class DepositListAPIView(APIView):
         ],
         responses={200: DepositListSerializer(many=True)}
     )
-    # def get(self, request):
-    #     search_keyword = request.query_params.get('search_keyword', None)
-    #
-    #     if search_keyword:
-    #         deposits = Deposit.objects.filter(
-    #             Q(customer_id__icontains=search_keyword) |
-    #             Q(order_id__icontains=search_keyword) |
-    #             Q(oxp_id__icontains=search_keyword) |
-    #             Q(txn_id__icontains=search_keyword) |
-    #             Q(sender_account__icontains=search_keyword) |
-    #             Q(receiver_account__icontains=search_keyword) |
-    #             Q(merchant_id__full_name__icontains=search_keyword) |  # Assuming 'name' is a field in Profile model
-    #             Q(bank__bank_name__icontains=search_keyword)  # Assuming 'name' is a field in BankModel
-    #         )
-    #     else:
-    #         # Get all deposits
-    #         deposits = Deposit.objects.all()
-    #
-    #     # Instantiate the custom paginator
-    #     paginator = CustomPagination()
-    #
-    #     # Apply pagination to the queryset
-    #     page = paginator.paginate_queryset(deposits, request, view=self)
-    #
-    #     if page is not None:
-    #         # Serialize page instead of entire queryset
-    #         serializer = DepositListSerializer(page, many=True)
-    #         return paginator.get_paginated_response(serializer.data)
-    #
-    #     # If no page, meaning pagination failed or not needed, return all items
-    #     serializer = DepositListSerializer(deposits, many=True)
-    #     return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
 
     def get(self, request):
         try:
@@ -113,6 +81,7 @@ class DepositListAPIView(APIView):
             return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
 
 
+class DepositPtoPCreateAPIView(APIView):
     @swagger_auto_schema(
         operation_description="Create a new deposit",
         request_body=DepositSerializer,
@@ -121,15 +90,13 @@ class DepositListAPIView(APIView):
             400: "Validation Error"
         }
     )
-    # def post(self, request):
-    #     pass
     def post(self, request, *args, **kwargs):
-        serializer = DepositSerializer(data=request.data)
+        serializer = DepositCreateSerializer(data=request.data)
 
         if serializer.is_valid():
             # Save the deposit record
-            deposit = serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
-
+            # print("Merchant: ", serializer.data)
+            serializer.save(is_active=True)
             # Return a response
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")
 
