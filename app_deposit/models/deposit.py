@@ -28,8 +28,8 @@ class Deposit(BaseModel):
 
     # Fields
     order_id = models.CharField(max_length=255, unique=True)  # Order ID from merchant's side
-    oxp_id = models.CharField(max_length=255, unique=True)  # Created on our side
-    txn_id = models.CharField(max_length=255, unique=True)  # Transaction ID from the bank
+    oxp_id = models.CharField(max_length=255, unique=True, null=True, blank=True)  # Created on our side
+    txn_id = models.CharField(max_length=255, null=True, blank=True)  # Transaction ID from the bank
     sending_amount = models.FloatField(default=0)  # Amount requested by merchant
     sending_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_request", null=True)  # Currency requested by merchant
     actual_received_amount = models.FloatField(default=0)  # Exact amount received

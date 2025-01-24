@@ -4,19 +4,15 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from app_deposit.models.deposit import Deposit
-from app_deposit.serializers.deposit import DepositSerializer, DepositCreateSerializer, DepositExternalCreateSerializer
+from app_deposit.serializers.deposit import DepositSerializer, DepositCreateSerializer, DepositExternalCreateSerializer, \
+    DepositPutRequestSerializer
+from core.models.InValidTransactionId import InvalidTransactionId
 from utils.common_response import CommonResponse
+from utils.decrypt_deposit_p2p_data import decrypt_deposit_p2p_data
 
 
 class DepositPtoPCreateAPIView(APIView):
-    @swagger_auto_schema(
-        operation_description="Create a new deposit",
-        request_body=DepositCreateSerializer,
-        responses={
-            201: openapi.Response('Deposit created successfully.', DepositSerializer),
-            400: "Validation Error"
-        }
-    )
+
     def post(self, request, *args, **kwargs):
         try:
             serializer = DepositExternalCreateSerializer(data=request.data)
@@ -24,9 +20,9 @@ class DepositPtoPCreateAPIView(APIView):
             if serializer.is_valid():
                 # Save the deposit record
 
-                serializer.save(is_active=True)
+                serializer.save()
                 # Return a response
-                print("Merchant: ", serializer.data)
+                print("Merchant: ", serializer)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")
 
             # Return validation errors
@@ -37,15 +33,40 @@ class DepositPtoPCreateAPIView(APIView):
 
 class DepositTransactionIdSubmitAPIView(APIView):
 
+    def _update_deposit_data(self, data):
+        try:
+            encrypted_data = data.pop('encrypted_data')
+            merchant_unique_id = data.pop('unique_id')
+            txn_id = data.pop('txn_id')
+            print(f"Encrypted data: {encrypted_data}")
+            print(f"Merchant unique id: {merchant_unique_id}")
+            print(f"txn_id: {txn_id}")
+
+            decrypted_data = decrypt_deposit_p2p_data(encrypted_data, merchant_unique_id)
+            print(f"decrypted_data: {decrypted_data}")
+            oxp_id = decrypted_data['oxp_id']
+            merchant_id = decrypted_data['merchant_id']
+            order_id = decrypted_data['order_id']
+            deposit = Deposit.objects.filter(oxp_id=oxp_id, merchant_id=merchant_id, order_id=order_id)
+            if not deposit.exists():
+                raise ValueError("Deposit not found!")
+
+            print("deposit: ", deposit)
+            deposit = deposit.first()
+            deposit.txn_id = txn_id
+            deposit.save()
+
+            deposit_serializer = DepositPutRequestSerializer(deposit)
+            invalid_txn = InvalidTransactionId(txn_id=txn_id)
+            invalid_txn.save()
+
+            return CommonResponse("success", deposit_serializer.data, status.HTTP_200_OK, "Data Updated!!")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
     def put(self, request, pk=None):
         try:
-            serializer = DepositSerializer(request.data, context={'request': request}, partial=False)
-            if serializer.is_valid():
-                serializer.save()
-                call_back_data = serializer.data
-                return CommonResponse("success", call_back_data, status.HTTP_200_OK, "Transaction ID Submitted!")
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Transaction id is not valid!")
-
+            return self._update_deposit_data(request.data)
         except Deposit.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
 

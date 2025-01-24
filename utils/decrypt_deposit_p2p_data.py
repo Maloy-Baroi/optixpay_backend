@@ -51,10 +51,10 @@ def decrypt_deposit_p2p_data(data, merchant_unique_id):
     merchant = MerchantProfile.objects.get(unique_id=merchant_unique_id)
     app_key = merchant.app_key
     global_secret_key = settings.SECRET_KEY
+    print(f"app_key: {app_key}, global_secret_key: {global_secret_key}, merchant: {merchant}")
     decrypted_data = decrypt_data(data, app_key, global_secret_key)
+    print(f"decrypted_data: {decrypted_data}")
     try:
-        # Correctly parse the JSON string to a dictionary
-        decrypted_data_dict = json.loads(decrypted_data)
-        return decrypted_data_dict
+        return decrypted_data
     except Exception as e:
         return None

@@ -46,9 +46,8 @@ def decrypt_data(encrypted_data, app_key, secret_key):
 def decrypt_payment_data(encrypted_data, app_key, secret_key) -> dict or None:
     decrypted_data = decrypt_data(encrypted_data, app_key, secret_key)
     try:
-        # Correctly parse the JSON string to a dictionary
-        decrypted_data_dict = json.loads(decrypted_data)
-        return decrypted_data_dict
+        if decrypted_data is not None and isinstance(decrypted_data, dict):
+            return decrypted_data
     except Exception as e:
         return None
 
