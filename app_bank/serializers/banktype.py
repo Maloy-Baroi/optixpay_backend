@@ -1,5 +1,9 @@
-from rest_framework import serializers
+from django.db.models import Q
+from rest_framework import serializers, status
 from app_bank.models.bank import BankTypeModel
+from utils.common_response import CommonResponse
+from utils.validationerror_return import validation_error_return
+
 
 class BankTypeModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,11 +11,6 @@ class BankTypeModelSerializer(serializers.ModelSerializer):
         exclude = ['created_by', 'updated_by']  # Exclude these fields from the input
 
     def create(self, validated_data):
-        # Set created_by and updated_by to the current user
-        user = self.context['request'].user
-        
-        validated_data['created_by'] = user
-        validated_data['updated_by'] = user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):

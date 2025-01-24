@@ -34,12 +34,6 @@ class BankTypeModel(BaseModel):
             )
         ]
 
-    def save(self, *args, **kwargs):
-        self.name = self.name.lower()
-        self.category = self.category.lower()
-
-        super(BankTypeModel, self).save(*args, **kwargs)
-
 
 class AgentBankModel(BaseModel):
     # Username
