@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/v1/app-mobile/', include('app_mobile.urls')),
     path('api/v1/app-prepayment/', include('app_prepayment.urls')),
     path('api/v1/app-sms/', include('app_sms.urls')),
+    path('api/v1/app_settlement/', include('app_settlement.urls')),
 
 
     path('api/v1/auth/', include('rest_framework.urls')),

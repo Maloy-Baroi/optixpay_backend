@@ -11,7 +11,7 @@ class BankModelSerializer(serializers.ModelSerializer):
             'account_number', 'minimum_amount', 'maximum_amount', 'daily_limit',
             'daily_usage', 'monthly_limit', 'monthly_usage', 'app_key', 'secret_key', 'is_active'
         ]
-        read_only_fields = ['agent', 'bank_unique_id', 'created_by', 'updated_by', 'created_at', 'updated_at']  # These fields will be set automatically
+        read_only_fields = ['agent', 'bank_type', 'bank_unique_id', 'created_by', 'updated_by', 'created_at', 'updated_at']  # These fields will be set automatically
 
     def create(self, validated_data):
         # Auto-generate bank_unique_id

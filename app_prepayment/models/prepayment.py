@@ -6,9 +6,9 @@ from core.models.BaseModel import BaseModel
 
 class Prepayment(BaseModel):
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Completed', 'Completed'),
-        ('Failed', 'Failed'),
+        ('pending', 'pending'),
+        ('completed', 'completed'),
+        ('failed', 'failed'),
     ]
 
     agent_id = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name='prepayment_agent')

@@ -30,6 +30,3 @@ def x_signature_generate(user_id):
     if response.status_code == 200:
         result = response.json()
         return result
-    else:
-        print(f"HTTP Code: {response.status_code}")
-        print(f"Response: {response.text}")

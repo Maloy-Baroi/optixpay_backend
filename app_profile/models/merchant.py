@@ -1,9 +1,6 @@
-import hashlib
 import secrets
 
 from app_auth.models import CustomUser
-from app_bank.models.bank import BankTypeModel
-from app_profile.models.wallet import MerchantWallet
 from core.models.BaseModel import BaseModel
 from django.db import models
 
@@ -12,9 +9,9 @@ from utils.generate_unique_id import generate_short_uuid
 
 class MerchantProfile(BaseModel):
     STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Pending', 'Pending'),
-        ('Hold', 'Hold'),
+        ('active', 'active'),
+        ('pending', 'pending'),
+        ('hold', 'hold'),
     ]
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -22,11 +19,12 @@ class MerchantProfile(BaseModel):
     phone_number = models.CharField(max_length=30, null=True, blank=False)
     unique_id = models.CharField(max_length=255, unique=True)
     logo = models.ImageField(upload_to='merchant_logos')
-    payment_methods = models.ManyToManyField(BankTypeModel, related_name='merchant_payment_method', blank=True)
+    payment_methods = models.ManyToManyField('app_bank.BankTypeModel', related_name='merchant_payment_method', blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Active')
-    merchant_wallet = models.ManyToManyField(MerchantWallet, related_name='merchant_profiles', blank=True)
+    merchant_wallet = models.ManyToManyField('app_profile.MerchantWallet', related_name='merchant_profiles', blank=True)
     app_key = models.CharField(max_length=255)
     secret_key = models.CharField(max_length=255)
+    is_negative_transaction_allowed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.secret_key:  # Generate only if not already set

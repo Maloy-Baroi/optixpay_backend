@@ -3,8 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from unicodedata import category
+
 from app_bank.models.bank import BankTypeModel
 from app_bank.serializers.banktype import BankTypeModelSerializer
+from app_deposit.models.deposit import Currency
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -68,12 +71,40 @@ class BankTypeListAPIView(APIView):
                 "An error occurred while retrieving bank_type data"
             )
 
+    def _check_if_already_exist(self, requested_data):
+        name = requested_data.get('name', None)
+        bank_category = requested_data.get('category')
+        bank_currency = requested_data.get('currency')
+        previously_existed_banktype = BankTypeModel.objects.filter(Q(name__iexact=name) & Q(category__iexact=bank_category))
+
+        if previously_existed_banktype.exists():
+            previously_existed_banktype = previously_existed_banktype.first()
+            if previously_existed_banktype.is_active:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
+                                      "Bank Type already exists!")
+            else:
+                previously_existed_banktype.is_active = True
+                previously_existed_banktype.name = name
+                previously_existed_banktype.category = bank_category
+                previously_existed_banktype.currency = Currency.objects.get(id=bank_currency)
+                previously_existed_banktype.save()
+                serializer = BankTypeModelSerializer(previously_existed_banktype)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
+                                      "Currency successfully created!")
+        return None
+
     def post(self, request):
+        response = self._check_if_already_exist(request.data)
+        if response is not None:
+            return response  # Return the response from check if it's not None
+
         serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
             return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Bank Type Successfully Created")
-        return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, serializer.errors)
+        else:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
+                                  "Bank Type with this name is already exists")
 
 
 class BankTypeUpdateAPIView(APIView):
@@ -82,7 +113,8 @@ class BankTypeUpdateAPIView(APIView):
     def put(self, request, pk):
         try:
             bank_type = BankTypeModel.objects.get(pk=pk)
-            serializer = BankTypeModelSerializer(bank_type, data=request.data, context={'request': request}, partial=True)
+            serializer = BankTypeModelSerializer(bank_type, data=request.data, context={'request': request},
+                                                 partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Bank Type Successfully Updated")
@@ -98,8 +130,6 @@ class BankTypeDeleteAPIView(APIView):
         try:
             bank_type = BankTypeModel.objects.get(pk=pk, is_active=True)
             bank_type.soft_delete()  # Perform a soft delete
-            return CommonResponse("success", "Deleted successfully", status.HTTP_204_NO_CONTENT, "Bank Type Deleted!")
+            return CommonResponse("success", {}, status.HTTP_200_OK, "Bank Type Deleted!")
         except BankTypeModel.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No Content Found")
-
-

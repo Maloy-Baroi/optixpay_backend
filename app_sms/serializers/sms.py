@@ -12,7 +12,7 @@ class SMSManagementSerializer(serializers.ModelSerializer):
             'sender',
             'fee',
             'balance',
-            'trx_id',
+            'txn_id',
             'send_date',
             'status',
             'is_active'
@@ -42,7 +42,7 @@ class SMSManagementUpdateSerializer(serializers.ModelSerializer):
             'sender',
             'fee',
             'balance',
-            'trx_id',
+            'txn_id',
             'send_date',
             'status',
             'is_active'

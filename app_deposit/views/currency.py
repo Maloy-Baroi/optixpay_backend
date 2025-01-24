@@ -8,7 +8,7 @@ from rest_framework import status, permissions
 # from app_deposit.models.deposit import Deposit
 from app_deposit.models.deposit import Currency
 # from app_deposit.serializers.deposit import DepositSerializer
-from app_deposit.serializers.currency import CurrencySerializer
+from app_deposit.serializers.currency import CurrencySerializer, CreateCurrencySerializer
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -60,10 +60,10 @@ class CurrencyListPostAPIView(APIView):
             result_page = paginator.paginate_queryset(currencys, request)
 
             if result_page is not None:
-                currencys_serializers = CurrencySerializer(result_page, many=True)
-                return paginator.get_paginated_response(currencys_serializers.data)
+                currency_serializers = CurrencySerializer(result_page, many=True)
+                return paginator.get_paginated_response(currency_serializers.data)
             else:
-                return CommonResponse("error", "No currency available", status.HTTP_204_NO_CONTENT)
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No currency available")
 
         except Exception as e:
             return CommonResponse(
@@ -71,22 +71,47 @@ class CurrencyListPostAPIView(APIView):
                 "An error occurred while retrieving merchant data"
             )
 
-        #     queryset = Currency.objects.all()
-        #     paginator = self.pagination_class()
-        #     result_page = paginator.paginate_queryset(queryset, request)
-        #     serializer = CurrencySerializer(result_page, many=True)
-        #     return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully fetched all currencies")
-        # except Currency.DoesNotExist:
-        #     return CommonResponse("error", {}, status.HTTP_404_NOT_FOUND, "Deposit not found")
+
+class CreateCurrencyAPIView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def _check_if_already_exist(self, requested_data):
+        name = requested_data.get('name')
+        currency_code = requested_data.get('currency_code')
+
+        # Perform a case-insensitive search to check for existing records
+        previously_existed_currency = Currency.objects.filter(
+            Q(name__iexact=name) | Q(currency_code__iexact=currency_code))
+
+        if previously_existed_currency.exists():
+            previously_existed_currency = previously_existed_currency.first()
+            if previously_existed_currency.is_active:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
+                                      "Currency already exists!")
+            else:
+                previously_existed_currency.is_active = True
+                previously_existed_currency.name = name
+                previously_existed_currency.currency_code = currency_code
+                previously_existed_currency.save()
+                serializer = CurrencySerializer(previously_existed_currency)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
+                                      "Currency successfully created!")
+        return None
 
     def post(self, request):
-        serializer = CurrencySerializer(data=request.data)
+        response = self._check_if_already_exist(request.data)
+        if response is not None:
+            return response  # Return the response from check if it's not None
+        serializer = CreateCurrencySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
-            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
-                                  "Successfully created new currency")
+            return Response(
+                {'status': 'success', 'data': serializer.data, 'message': 'Successfully created/updated currency'},
+                status=status.HTTP_201_CREATED)
         else:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful")
+            # Print all serializer errors to debug
+            return Response({'status': 'error', 'data': {}, 'message': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class CurrencyUpdateAPIView(APIView):
@@ -110,7 +135,7 @@ class CurrencyUpdateAPIView(APIView):
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Missing currency identifier")
         try:
             currency = Currency.objects.get(pk=pk)
-            serializer = CurrencySerializer(currency, data=request.data, context={'request': request})
+            serializer = CurrencySerializer(currency, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully updated currency")

@@ -6,13 +6,17 @@ from core.models.BaseModel import BaseModel
 
 import uuid
 
+from utils.currencies import get_default_currency
+
+
 class BankTypeModel(BaseModel):
     name = models.CharField(max_length=50, help_text="Name of the bank type, e.g., Bkash, Rocket, Nagad")
     CATEGORY_CHOICES = [
-        ('p2p', 'Peer-to-Peer'),
-        ('p2c', 'Peer-to-Customer'),
+        ('p2p', 'p2p'),
+        ('p2c', 'p2c'),
     ]
-    category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type")
+    category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type", default=get_default_currency())
+    currency = models.ForeignKey('app_deposit.Currency', on_delete=models.DO_NOTHING, null=True)
     is_active = models.BooleanField(default=True)
 
 
@@ -76,13 +80,18 @@ class AgentBankModel(BaseModel):
         default=0.0,
         help_text="Monthly usage so far"
     )
+
+    withdraw_commission = models.FloatField(default=5.00)
+    deposit_commission = models.FloatField(default=10.00)
+
+    balance = models.FloatField(default=0.0, help_text="Balance")
     # App Key
     app_key = models.CharField(max_length=255, help_text="API key for the application")
     # Secret Key
     secret_key = models.CharField(max_length=255, help_text="Secret key for the application")
 
     def __str__(self):
-        return self.bank_name
+        return f"{self.id}-{self.bank_name}, {self.agent.name}, {self.bank_type.name}_{self.bank_type.category}"
 
     class Meta:
         db_table = "agent_bank"

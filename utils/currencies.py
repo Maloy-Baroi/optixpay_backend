@@ -1,3 +1,9 @@
+from app_deposit.models.deposit import Currency
+
+
+def get_default_currency():
+    return Currency.objects.get_or_create(name='Bangladeshi Taka')[0].pk
+
 currency_codes = [
     ('AFN', 'AFN'),
     ('ALL', 'ALL'),
