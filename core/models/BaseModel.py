@@ -11,16 +11,19 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="%(class)s_created_by",  # Unique related name
-        verbose_name="Created By"
+        related_name="%(class)s_created",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
     )
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="%(class)s_updated_by",  # Unique related name
-        verbose_name="Updated By"
+        related_name="%(class)s_updated",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
     )
+
     is_active = models.BooleanField(default=False, verbose_name="Is Active")
 
     class Meta:
