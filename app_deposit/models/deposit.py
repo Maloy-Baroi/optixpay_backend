@@ -30,10 +30,10 @@ class Deposit(BaseModel):
     order_id = models.CharField(max_length=255, unique=True)  # Order ID from merchant's side
     oxp_id = models.CharField(max_length=255, unique=True)  # Created on our side
     txn_id = models.CharField(max_length=255, unique=True)  # Transaction ID from the bank
-    requested_amount = models.FloatField(default=0)  # Amount requested by merchant
-    requested_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_request", null=True)  # Currency requested by merchant
-    sent_amount = models.FloatField(default=0)  # Exact amount received
-    sent_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_receive", null=True)  # Bank currency
+    sending_amount = models.FloatField(default=0)  # Amount requested by merchant
+    sending_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_request", null=True)  # Currency requested by merchant
+    actual_received_amount = models.FloatField(default=0)  # Exact amount received
+    received_currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING, related_name="currency_receive", null=True)  # Bank currency
     created_on = models.DateTimeField(auto_now_add=True)  # Timestamp of creation
     last_updated = models.DateTimeField(auto_now=True)  # Timestamp of the last status update
     sender_account = models.CharField(max_length=20)  # Payer's/user's/player's bank number
@@ -41,17 +41,17 @@ class Deposit(BaseModel):
     agent_commission = models.FloatField(default=0.0)  # Agent commission
     merchant_commission = models.FloatField(default=0.0)  # Merchant commission
     status_choices = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Successful', 'Successful'),
-        ('Failed', 'Failed'),
-        ('Cancelled', 'Cancelled'),
-        ('Expired', 'Expired'),
-        ('Under Review', 'Under Review'),
-        ('On Hold', 'On Hold'),
-        ('Declined', 'Declined'),
+        ('processing', 'processing'),
+        ('successful', 'successful'),
+        ('failed', 'failed'),
+        ('cancelled', 'cancelled'),
+        ('expired', 'expired'),
+        ('under Review', 'under Review'),
+        ('on Hold', 'on Hold'),
+        ('declined', 'declined'),
     ]
     status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
+    call_back_url = models.CharField(max_length=255, default="https://google.com")
 
     def __str__(self):
         return f"Deposit {self.oxp_id} - {self.status}"

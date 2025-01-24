@@ -45,6 +45,10 @@ class AgentBankModel(BaseModel):
     # currency = models.ForeignKey('app_deposit.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     # Bank
     bank_type = models.ForeignKey(BankTypeModel, on_delete=models.CASCADE, related_name="banks", help_text="Type of the bank")
+    usage_for = models.CharField(max_length=100, help_text="Usage for", choices=[
+        ('deposit', 'deposit'),
+        ('withdraw', 'withdraw'),
+    ], default="deposit")
     # Agent
     agent = models.ForeignKey(AgentProfile, on_delete=models.CASCADE, related_name="banks_agent", help_text="Agent linked to the bank")
     account_number = models.CharField(

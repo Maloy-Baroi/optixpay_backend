@@ -31,8 +31,8 @@ class MerchantProfile(BaseModel):
             self.secret_key = secrets.token_urlsafe(64)  # 64 bytes long secret
         if not self.app_key:  # Generate only if not already set
             self.app_key = secrets.token_urlsafe(32)  # 32 bytes long app key
-
-        self.unique_id = f"merchant_{generate_short_uuid()}"
+        if not self.unique_id:
+            self.unique_id = f"merchant_{generate_short_uuid()}"
         super(MerchantProfile, self).save(*args, **kwargs)
 
 

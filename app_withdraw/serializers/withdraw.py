@@ -165,7 +165,7 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             # validated_data['order_id'] = generate_order_id()  # Assume generate_order_id() is a helper function
 
             bank_type = BankTypeModel.objects.filter(name=bank_name, category='p2p').first()
-            agent_bank = AgentBankModel.objects.filter(bank_type=bank_type)
+            agent_bank = AgentBankModel.objects.filter(bank_type=bank_type, usage_for='withdraw')
             random_agent_bank = choice(agent_bank)
             agent_balance = random_agent_bank.balance
             agent_withdraw_commission = random_agent_bank.withdraw_commission

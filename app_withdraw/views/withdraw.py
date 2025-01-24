@@ -109,7 +109,8 @@ class WithdrawCreateAPIView(APIView):
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
-class WithdrawCreateFromExternalAPIView(APIView):
+
+class WithdrawCreateP2PExternalAPIView(APIView):
     # permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
