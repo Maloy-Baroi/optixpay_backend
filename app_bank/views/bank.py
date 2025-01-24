@@ -76,6 +76,7 @@ class BankCreateAPIView(APIView):
         try:
             profile = None
             bank_type = str(request.data.pop('bank_type')).lower()
+            bank_type, usage_for = bank_type.split("-", 1)
             bank_method = str(request.data.pop('bank_method')).lower()
             bank_type = BankTypeModel.objects.filter(name__iexact=bank_method, category__iexact=bank_type).first()
 
@@ -92,7 +93,7 @@ class BankCreateAPIView(APIView):
             serializer = BankModelSerializer(data=request.data, context={'request': request})
             print("Profile: ", profile)
             if serializer.is_valid() and profile:
-                serializer.save(bank_type=bank_type, agent=profile, created_by=request.user,
+                serializer.save(bank_type=bank_type, usage_for=usage_for, agent=profile, created_by=request.user,
                                 updated_by=request.user,
                                 is_active=True)  # Will automatically set agent and bank_unique_id
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Created Successfully")

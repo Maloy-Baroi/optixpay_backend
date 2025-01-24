@@ -80,30 +80,6 @@ class DepositListAPIView(APIView):
         except Exception as e:
             return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
 
-
-class DepositPtoPCreateAPIView(APIView):
-    @swagger_auto_schema(
-        operation_description="Create a new deposit",
-        request_body=DepositSerializer,
-        responses={
-            201: openapi.Response('Deposit created successfully.', DepositSerializer),
-            400: "Validation Error"
-        }
-    )
-    def post(self, request, *args, **kwargs):
-        serializer = DepositCreateSerializer(data=request.data)
-
-        if serializer.is_valid():
-            # Save the deposit record
-            # print("Merchant: ", serializer.data)
-            serializer.save(is_active=True)
-            # Return a response
-            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")
-
-        # Return validation errors
-        return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
-
-
 class DepositAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, pk=None):
@@ -138,3 +114,5 @@ class DepositAPIView(APIView):
             return CommonResponse("success", {}, status.HTTP_204_NO_CONTENT, "Deposit deleted successfully")
         except Deposit.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
+
+

@@ -51,6 +51,7 @@ class Deposit(BaseModel):
         ('declined', 'declined'),
     ]
     status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
+    call_back_url = models.CharField(max_length=255, default="https://google.com")
 
     def __str__(self):
         return f"Deposit {self.oxp_id} - {self.status}"
