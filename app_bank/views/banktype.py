@@ -96,7 +96,6 @@ class BankTypeListAPIView(APIView):
     def post(self, request):
         response = self._check_if_already_exist(request.data)
         if response is not None:
-            print("Here it is")
             return response  # Return the response from check if it's not None
 
         serializer = BankTypeModelSerializer(data=request.data, context={'request': request})

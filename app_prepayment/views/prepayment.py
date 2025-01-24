@@ -26,13 +26,10 @@ class WebhookAPIView(APIView):
     def post(self, request):
         try:
             received_signature = request.headers.get('x-signature', '')
-            print("Received Signature: ", received_signature)
             request_body = request.body.decode('utf-8')
-            print("Request Body: ", request_body)
             platform_id = '1333'
             signature_contract = f'{platform_id};{request_body};{SECRET_KEY}'
             signature = hmac.new(SECRET_KEY.encode(), signature_contract.encode(), hashlib.sha256).hexdigest()
-            print("Generated Signature: ", signature)
 
             data = request.data
 

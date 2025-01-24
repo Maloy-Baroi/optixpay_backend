@@ -79,8 +79,6 @@ class CreateCurrencyAPIView(APIView):
         name = requested_data.get('name')
         currency_code = requested_data.get('currency_code')
 
-        print(f"Name: {name}, Currency code: {currency_code}")
-
         # Perform a case-insensitive search to check for existing records
         previously_existed_currency = Currency.objects.filter(
             Q(name__iexact=name) | Q(currency_code__iexact=currency_code))
@@ -88,17 +86,14 @@ class CreateCurrencyAPIView(APIView):
         if previously_existed_currency.exists():
             previously_existed_currency = previously_existed_currency.first()
             if previously_existed_currency.is_active:
-                print("is_active true")
                 return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
                                       "Currency already exists!")
             else:
-                print("is_active false")
                 previously_existed_currency.is_active = True
                 previously_existed_currency.name = name
                 previously_existed_currency.currency_code = currency_code
                 previously_existed_currency.save()
                 serializer = CurrencySerializer(previously_existed_currency)
-                print("Previously exist: ", previously_existed_currency)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
                                       "Currency successfully created!")
         return None
@@ -115,7 +110,6 @@ class CreateCurrencyAPIView(APIView):
                 status=status.HTTP_201_CREATED)
         else:
             # Print all serializer errors to debug
-            print(serializer.errors)
             return Response({'status': 'error', 'data': {}, 'message': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
 
