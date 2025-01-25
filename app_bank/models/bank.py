@@ -15,7 +15,7 @@ class BankTypeModel(BaseModel):
         ('p2p', 'p2p'),
         ('p2c', 'p2c'),
     ]
-    category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type", default=get_default_currency())
+    category = models.CharField(max_length=3, choices=CATEGORY_CHOICES, help_text="Category of the bank type", default='p2c')
     currency = models.ForeignKey('app_deposit.Currency', on_delete=models.DO_NOTHING, null=True)
     is_active = models.BooleanField(default=True)
 
