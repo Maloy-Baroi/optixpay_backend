@@ -76,7 +76,7 @@ class BankCreateAPIView(APIView):
         try:
             profile = None
             bank_type = str(request.data.pop('bank_type')).lower()
-            bank_type, usage_for = bank_type.split("-", 1)
+            bank_type, usage_for = bank_type.split("_", 1)
             bank_method = str(request.data.pop('bank_method')).lower()
             bank_type = BankTypeModel.objects.filter(name__iexact=bank_method, category__iexact=bank_type).first()
 

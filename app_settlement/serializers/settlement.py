@@ -12,3 +12,12 @@ class SettlementSerializer(serializers.ModelSerializer):
         model = Settlement
         fields = ['id', 'settlement_id', 'merchant_name', 'currency_code', 'amount', 'commission_percentage',
                   'amount_after_fees', 'txn_id', 'usdt_address', 'status']
+
+
+# class SettlementCreateSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Settlement
+#         fields = [
+#             ''
+#         ]
+
