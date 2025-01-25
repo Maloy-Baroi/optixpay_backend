@@ -1,3 +1,5 @@
+from enum import unique
+
 from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -116,15 +118,19 @@ class WithdrawCreateP2PExternalAPIView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Access headers from META
-            app_key = request.query_params.get('app_key', None)
-            secret_key = request.query_params.get('secret_key', None)
-            if app_key is None or secret_key is None:
+            bank_name = request.data.get('bank_name', None)
+            unique_id = request.data.get('unique_id', None)
+            # optixpay_component = request.data.get('optixpay_component', None)
+
+            # app_key = request.query_params.get('app_key', None)
+            # secret_key = request.query_params.get('secret_key', None)
+            if unique_id is None:
                 return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
             else:
-                merchant = MerchantProfile.objects.filter(app_key=app_key, secret_key=secret_key).first()
+                merchant = MerchantProfile.objects.filter(unique_id=unique_id).first()
                 loggedin_user = merchant.user
 
-            serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': app_key, 'secret_key': secret_key})
+            serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': merchant.app_key, 'secret_key': merchant.secret_key, "bank_name": bank_name})
             if serializer.is_valid():
                 serializer.save(created_by=loggedin_user, updated_by=loggedin_user, is_active=True)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successfully Created!")
