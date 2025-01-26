@@ -13,10 +13,11 @@ class Settlement(BaseModel):
 
     settlement_id = models.CharField(max_length=20, unique=True)
     merchant_id = models.ForeignKey('app_profile.MerchantProfile', on_delete=models.CASCADE, null=True)
+    wallet = models.ForeignKey('app_profile.MerchantWallet', on_delete=models.DO_NOTHING, blank=True, null=True)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.FloatField()
     commission_percentage = models.FloatField() # fees
-    amount_after_fees = models.FloatField()
+    amount_after_commission = models.FloatField()
     txn_id = models.CharField(max_length=20, unique=True)
     usdt_address = models.CharField(max_length=34)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')

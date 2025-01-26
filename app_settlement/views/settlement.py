@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from app_profile.models.merchant import MerchantProfile
 from app_settlement.models.settlement import Settlement
 from app_settlement.serializers.settlement import SettlementSerializer
 from services.pagination import CustomPagination
@@ -46,7 +47,29 @@ class SettlementListAPIView(APIView):
                 settlements_serializer = SettlementSerializer(result_page, many=True)
                 return paginator.get_paginated_response(settlements_serializer.data)
             else:
-                return Response({"status": "error", "data": {}, "message": "No settlements available"}, status=status.HTTP_204_NO_CONTENT)
+                return Response({"status": "error", "data": {}, "message": "No settlements available"},
+                                status=status.HTTP_204_NO_CONTENT)
 
         except Exception as e:
-            return Response({"status": "error", "data": {}, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"status": "error", "data": {}, "message": str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class SettlementCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            merchant = MerchantProfile.objects.get(user=request.user)
+            settlement_serializer = SettlementSerializer(data=request.data,
+                                                         context={'request': request, 'merchant_id': merchant})
+            if settlement_serializer.is_valid():
+                settlement_serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                return CommonResponse('success', settlement_serializer.data, status.HTTP_201_CREATED,
+                                      "Successfully created settlement")
+            else:
+                return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful creation of settlement")
+        except Exception as e:
+            return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful creation of settlement")
+

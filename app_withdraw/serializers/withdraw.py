@@ -124,8 +124,10 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             this_request = self.context.get('request')
             app_key = self.context.get('app_key')
             secret_key = self.context.get('secret_key')
+            # bank_name = self.context.get('bank_name')
             if this_request:
                 preferred_currency = this_request.data.pop('preferred_currency', None)
+                bank_name = this_request.data.pop('bank_name', None)
 
                 if not preferred_currency:
                     raise ValueError("Preferred Currency is required!")
@@ -144,10 +146,20 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                     raise ValueError("Merchant is not Valid!")
                 else:
                     # Filter merchant_wallets linked to this profile with the specified base currency
-                    wallet = merchant_id.merchant_wallet.filter(wallet_base_currency=preferred_currency_id).first()
+                    filtered_wallet = merchant_id.merchant_wallet.filter(wallet_base_currency=preferred_currency_id)
+                    wallets = []
+                    for wal in filtered_wallet:
+                        if wal.bank.name.lower() == bank_name.lower():
+                            wallets.append(wal)
+
+                    wallet = choice(wallets)
 
                     # Calculate the total balance for all wallets with the base currency
-                    total_balance = wallet.balance
+                    total_balance = 0
+                    try:
+                        total_balance = wallet.balance
+                    except Exception as e:
+                        raise ValueError(f"Error Merchant: {str(e)}")
                     merchant_withdraw_commission = wallet.withdraw_commission
                     requested_amount = float(validated_data['requested_amount'])
 
@@ -156,7 +168,6 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                         raise ValueError(f"Contact to {merchant_id.name}. Info: Balance is going negative!")
 
                     validated_data['merchant_id'] = merchant_id
-                bank_name = this_request.data.pop('bank_name', None)
             else:
                 raise ValueError("Request object is missing in serializer context")
 
@@ -164,10 +175,13 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             validated_data['oxp_id'] = generate_opx_id()  # Assume generate_txn_id() is a helper function
             # validated_data['order_id'] = generate_order_id()  # Assume generate_order_id() is a helper function
 
-            bank_type = BankTypeModel.objects.filter(name=bank_name, category='p2p').first()
+            bank_type = BankTypeModel.objects.filter(name__iexact=bank_name, category='p2p').first()
             agent_bank = AgentBankModel.objects.filter(bank_type=bank_type, usage_for='withdraw')
             random_agent_bank = choice(agent_bank)
-            agent_balance = random_agent_bank.balance
+            try:
+                agent_balance = random_agent_bank.balance
+            except Exception as e:
+                raise ValueError(f"Agent Bank: {str(e)}")
             agent_withdraw_commission = random_agent_bank.withdraw_commission
             agent = AgentProfile.objects.filter(id=random_agent_bank.agent.id).first()
 
@@ -220,8 +234,6 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             withdraw.merchant_amount_after_commission = merchant_commission_amount_n_balance
             withdraw.save()
 
-            # random_agent_bank.balance = agent_new_balance
-            # random_agent_bank.save()
             return withdraw
         except Exception as e:
             raise ValueError(str(e))
@@ -295,15 +307,16 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                 instance.txn_id = validated_data.get('txn_id', instance.txn_id)
                 withdraw_sender_account = instance.sender_account
                 withdraw_requested_amount = instance.requested_amount
-                withdraw_verify = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id, account=withdraw_sender_account)
+                withdraw_verify = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id,
+                                                account=withdraw_sender_account)
                 if not withdraw_verify:
-                    raise serializers.ValidationError({"status": "error", "data": {}, "message": "Transaction verification failed. Please contact to the administrator."})
+                    raise serializers.ValidationError({"status": "error", "data": {},
+                                                       "message": "Transaction verification failed. Please contact to the administrator."})
 
                 agent_balance = instance.agent_balance_should_be
                 withdraw_agent_bank = instance.bank
                 agent_bank = AgentBankModel.objects.get(id=withdraw_agent_bank.id)
                 agent_bank.balance = agent_balance
-
 
                 instance.sent_currency = agent_bank.bank_type.currency
                 instance.sent_amount = instance.requested_amount
