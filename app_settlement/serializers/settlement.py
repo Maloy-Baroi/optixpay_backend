@@ -1,8 +1,4 @@
-from locale import currency
-
 from rest_framework import serializers
-from app_profile.models.merchant import MerchantProfile  # Import the model if it's in a separate file
-from app_deposit.models.deposit import Currency  # Make sure the import is correct
 from app_profile.models.wallet import MerchantWallet
 from app_settlement.models.settlement import Settlement
 from utils.optixpay_id_generator import generate_settlement_id
