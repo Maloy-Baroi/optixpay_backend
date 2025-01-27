@@ -10,6 +10,8 @@ from app_bank.models.bank import BankTypeModel
 from app_bank.serializers.banktype import BankTypeModelSerializer, BankTypeOnlyNameSerializer
 from app_deposit.models.deposit import Deposit
 from app_profile.models.merchant import MerchantProfile
+from app_profile.models.wallet import MerchantWallet
+from app_profile.serializers.wallet import MerchantWalletSerializer
 from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 
@@ -201,4 +203,21 @@ class BankTypeForWithdrawCreateAPIView(APIView):
             return CommonResponse("success", bank_type_serializers.data, status.HTTP_200_OK, "Data Found!")
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Data Not Found!")
+
+
+class MerchantWalletListAPIView(APIView):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+
+    def get(self, request):
+        try:
+            user = request.user
+            merchant = MerchantProfile.objects.filter(user=user).first()
+            wallets = merchant.merchant_wallet.filter(balance__gte=1)
+            if len(wallets) > 0:
+                serializer = MerchantWalletSerializer(wallets, many=True)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Found!")
+            else:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "No Record Found!")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
