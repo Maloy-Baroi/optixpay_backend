@@ -91,7 +91,6 @@ class BankCreateAPIView(APIView):
                 return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "User Role does not exist")
 
             serializer = BankModelSerializer(data=request.data, context={'request': request})
-            print("Profile: ", profile)
             if serializer.is_valid() and profile:
                 serializer.save(bank_type=bank_type, usage_for=usage_for, agent=profile, created_by=request.user,
                                 updated_by=request.user,

@@ -21,14 +21,11 @@ class DepositPtoPCreateAPIView(APIView):
                 # Save the deposit record
 
                 serializer.save()
-                # Return a response
-                print("Merchant: ", serializer)
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Data Created!")
 
             # Return validation errors
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Exception as e:
-            print(str(e))
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 class DepositTransactionIdSubmitAPIView(APIView):
@@ -38,12 +35,8 @@ class DepositTransactionIdSubmitAPIView(APIView):
             encrypted_data = data.pop('encrypted_data')
             merchant_unique_id = data.pop('unique_id')
             txn_id = data.pop('txn_id')
-            print(f"Encrypted data: {encrypted_data}")
-            print(f"Merchant unique id: {merchant_unique_id}")
-            print(f"txn_id: {txn_id}")
 
             decrypted_data = decrypt_deposit_p2p_data(encrypted_data, merchant_unique_id)
-            print(f"decrypted_data: {decrypted_data}")
             oxp_id = decrypted_data['oxp_id']
             merchant_id = decrypted_data['merchant_id']
             order_id = decrypted_data['order_id']
@@ -51,7 +44,6 @@ class DepositTransactionIdSubmitAPIView(APIView):
             if not deposit.exists():
                 raise ValueError("Deposit not found!")
 
-            print("deposit: ", deposit)
             deposit = deposit.first()
             deposit.txn_id = txn_id
             deposit.save()

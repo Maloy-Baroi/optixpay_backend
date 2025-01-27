@@ -1,14 +1,15 @@
+from locale import currency
 from random import choice
 
 from PIL.ImageChops import difference
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers, status
-
 from app_bank.models.bank import BankTypeModel, AgentBankModel
 from app_deposit.models.deposit import Currency
 from app_profile.models.agent import AgentProfile
 from app_profile.models.merchant import MerchantProfile
+from app_profile.models.wallet import CurrencyConversion
 from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 from core.models.InValidTransactionId import InvalidTransactionId
@@ -77,7 +78,7 @@ class WithdrawSerializer(serializers.ModelSerializer):
     agent_id = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
     requested_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
     sent_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
-    status = serializers.ChoiceField(choices=Withdraw.status_choices)
+    status = serializers.ChoiceField(choices=Withdraw.STATUS_CHOICES)
 
     def validate_customer_id(self, value):
         # Example validation: customer ID must be non-empty
@@ -183,14 +184,33 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
 
                     # Calculate the total balance for all wallets with the base currency
                     total_balance = 0
+                    converted_requested_amount = 0.00
+                    requested_amount = float(validated_data['requested_amount'])
                     try:
+                        wallet_currency_code = wallet.wallet_base_currency.currency_code
+                        wallet_currency_name = wallet.wallet_base_currency.name
+
+                        if not (wallet_currency_code == preferred_currency_id.currency_code or wallet_currency_name == preferred_currency_id.name):
+                            currency_rate = CurrencyConversion.objects.filter(
+                                (
+                                        Q(base_currency__currency_code=preferred_currency_id.currency_code,
+                                          to_currency__currency_code=wallet_currency_code)
+                                ) & Q(merchant_wallet=wallet)
+                            )
+                            if not currency_rate.exists():
+                                raise ValueError("Currency rate is not valid!")
+
+                            currency_rate = currency_rate.first()
+
+                            converted_amount = float(requested_amount) * float(currency_rate.conversion_rate)
+                        else:
+                            converted_amount = requested_amount
                         total_balance = wallet.balance
                     except Exception as e:
                         raise ValueError(f"Error Merchant: {str(e)}")
                     merchant_withdraw_commission = wallet.withdraw_commission
-                    requested_amount = float(validated_data['requested_amount'])
 
-                    if (total_balance < requested_amount or total_balance - requested_amount <= 0) and (
+                    if (total_balance < converted_amount or total_balance - converted_amount <= 0) and (
                             merchant_id.is_negative_transaction_allowed == False):
                         raise ValueError(f"Contact to {merchant_id.name}. Info: Balance is going negative!")
 
@@ -229,6 +249,7 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 oxp_id=validated_data['oxp_id'],
                 # txn_id=validated_data[''],
                 requested_amount=validated_data['requested_amount'],
+                converted_amount=converted_amount,
                 requested_currency=validated_data['requested_currency'],
                 # sent_amount=validated_data[''],
                 # sent_currency=validated_data[''],
@@ -237,16 +258,16 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 agent_commission=agent_withdraw_commission,  # Default
                 merchant_commission=merchant_withdraw_commission,  # Default
                 status=validated_data['status'],  # Default
-                success_callbackurl=validated_data['success_callbackurl'],
-                failed_callbackurl=validated_data['failed_callbackurl'],
-                cancel_callbackurl=validated_data['cancel_callbackurl'],
+                success_callbackurl="",
+                failed_callbackurl="",
+                cancel_callbackurl="",
                 is_active=True,
                 created_by=validated_data['created_by'],
                 updated_by=validated_data['updated_by'],
             )
 
             merchant_new_balance, agent_new_balance, merchant_commission_amount_n_balance, agent_commission_amount_n_balance = calculate_balances_for_withdraw(
-                requested_amount=requested_amount,
+                requested_amount=converted_amount,
                 merchant_balance=wallet.balance,
                 agent_balance=agent_balance,
                 merchant_commission=merchant_withdraw_commission,
@@ -279,6 +300,7 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
             'oxp_id',
             'txn_id',
             'requested_amount',
+            'converted_amount',
             'requested_currency',
             'sent_amount',
             'sent_currency',
@@ -301,13 +323,13 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
     agent_id = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
     requested_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
     sent_currency = serializers.PrimaryKeyRelatedField(read_only=True, allow_null=True)
-    status = serializers.ChoiceField(choices=Withdraw.status_choices)
+    status = serializers.ChoiceField(choices=Withdraw.STATUS_CHOICES)
     txn_id = serializers.CharField(required=True)
 
-    def validate_customer_id(self, value):
-        if not value:
-            raise serializers.ValidationError("Customer ID must be provided.")
-        return value
+    # def validate_customer_id(self, value):
+    #     if not value:
+    #         raise serializers.ValidationError("Customer ID must be provided.")
+    #     return value
 
     def validate(self, data):
         return data
@@ -330,15 +352,23 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(f"Agents are not allowed to update {field}.")
             instance.status = validated_data.get('status', instance.status)
 
-            if validated_data.get('status') and validated_data.get('status') == 'Successful':
+            if validated_data.get('status') and validated_data.get('status') == 'successful':
                 instance.txn_id = validated_data.get('txn_id', instance.txn_id)
                 withdraw_sender_account = instance.sender_account
                 withdraw_requested_amount = instance.requested_amount
-                withdraw_verify = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id,
+                withdraw_verify, sms = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id,
                                                 account=withdraw_sender_account)
+
+                # without amount check from sms
+                # withdraw_verify = verify_by_sms(amount=withdraw_requested_amount, txn_id=instance.txn_id)
+
                 if not withdraw_verify:
                     raise serializers.ValidationError({"status": "error", "data": {},
                                                        "message": "Transaction verification failed. Please contact to the administrator."})
+
+                # without amount check from sms
+                # if amount != instance.converted_amount:
+                #     new_converted_amount = instance
 
                 agent_balance = instance.agent_balance_should_be
                 withdraw_agent_bank = instance.bank
@@ -349,7 +379,7 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                 instance.sent_amount = instance.requested_amount
 
                 sms = SMSManagement.objects.get(txn_id=instance.txn_id)
-                sms.status = 'Claimed'
+                sms.status = 'claimed'
 
                 invalid_txn_id = InvalidTransactionId(txn_id=instance.txn_id)
 

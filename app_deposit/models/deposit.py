@@ -40,7 +40,7 @@ class Deposit(BaseModel):
     receiver_account = models.CharField(max_length=20)  # Agent's bank number
     agent_commission = models.FloatField(default=0.0)  # Agent commission
     merchant_commission = models.FloatField(default=0.0)  # Merchant commission
-    status_choices = [
+    STATUS_CHOICES = [
         ('processing', 'processing'),
         ('successful', 'successful'),
         ('failed', 'failed'),
@@ -50,7 +50,7 @@ class Deposit(BaseModel):
         ('on Hold', 'on Hold'),
         ('declined', 'declined'),
     ]
-    status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # Status of the deposit
     call_back_url = models.CharField(max_length=255, default="https://google.com")
 
     def __str__(self):

@@ -23,6 +23,7 @@ class Withdraw(BaseModel):
     oxp_id = models.CharField(max_length=255, unique=True, null=True, blank=True)  # Created on our side
     txn_id = models.CharField(max_length=255, unique=True, null=True, blank=True)  # Transaction ID from the bank
     requested_amount = models.FloatField(default=0)  # Amount requested by merchant
+    converted_amount = models.FloatField(default=0) # if currency is not similar to the base currency
     requested_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='requested_currency_withdraw',null=True, blank=True)  # Currency requested by merchant
     sent_amount = models.FloatField(default=0)  # Exact amount received
     sent_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='sent_currency_withdraw',null=True, blank=True)  # Bank currency
@@ -34,12 +35,12 @@ class Withdraw(BaseModel):
     merchant_amount_after_commission = models.FloatField(default=0)
     agent_balance_should_be = models.FloatField(default=0)
     merchant_balance_should_be = models.FloatField(default=0)
-    status_choices = [
-        ('Assigned', 'Assigned'),
-        ('Successful', 'Successful'),
-        ('Failed', 'Failed'),
+    STATUS_CHOICES = [
+        ('assigned', 'assigned'),
+        ('successful', 'successful'),
+        ('failed', 'failed'),
     ]
-    status = models.CharField(max_length=20, choices=status_choices, default='Pending')  # Status of the deposit
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # Status of the deposit
     success_callbackurl = models.CharField(max_length=255, null=True, blank=True)
     failed_callbackurl = models.CharField(max_length=255, null=True, blank=True)
     cancel_callbackurl = models.CharField(max_length=255, null=True, blank=True)
