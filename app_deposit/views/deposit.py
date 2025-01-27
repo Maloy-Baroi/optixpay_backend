@@ -38,6 +38,7 @@ class DepositListAPIView(APIView):
             deposit_id = request.query_params.get('deposit_id', None)
             search_status = request.query_params.get('status', '')
             bank = request.query_params.get('bank', '')
+            bank_type = request.query_params.get('bank_type', '')
             is_active = request.query_params.get('is_active', True)
 
             # Build queryset
@@ -46,7 +47,7 @@ class DepositListAPIView(APIView):
             if deposit_id:
                 try:
                     agent = Deposit.objects.get(id=deposit_id)
-                    deposit_serializers = DepositSerializer(agent)
+                    deposit_serializers = DepositListSerializer(agent)
                     return CommonResponse(
                         "success", deposit_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
@@ -61,6 +62,8 @@ class DepositListAPIView(APIView):
                 deposits = deposits.filter(status=search_status)
             if bank:
                 deposits = deposits.filter(bank__bank_name__icontains=bank)
+            if bank_type:
+                deposits = deposits.filter(bank__bank_type__category__iexact=bank_type)
             if is_active:
                 deposits = deposits.filter(is_active=is_active)
 
@@ -70,7 +73,7 @@ class DepositListAPIView(APIView):
             result_page = paginator.paginate_queryset(deposits, request)
 
             if result_page is not None:
-                deposits_serializers = DepositSerializer(result_page, many=True)
+                deposits_serializers = DepositListSerializer(result_page, many=True)
                 return paginator.get_paginated_response(deposits_serializers.data)
             else:
                 return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "No deposits available")

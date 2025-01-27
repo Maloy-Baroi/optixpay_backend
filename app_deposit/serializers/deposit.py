@@ -16,21 +16,67 @@ from utils.optixpay_id_generator import generate_opx_id
 
 
 class DepositListSerializer(serializers.ModelSerializer):
-    merchant = ProfileSerializer(source='merchant_id', read_only=True)
-    bank = BankModelSerializer(read_only=True)
-    agent = ProfileSerializer(source='agent_id', read_only=True)
-    sending_currency = CurrencySerializer(read_only=True)
-    sent_currency = CurrencySerializer(read_only=True)
+    # merchant = ProfileSerializer(source='merchant_id', read_only=True)
+    # bank = BankModelSerializer(read_only=True)
+    # agent = ProfileSerializer(source='agent_id', read_only=True)
+    # sending_currency = CurrencySerializer(read_only=True)
+    # sent_currency = CurrencySerializer(read_only=True)
+    merchant_unique_id = serializers.SerializerMethodField()
+    merchant_name = serializers.SerializerMethodField()
+    bank_name = serializers.SerializerMethodField()
+    agent_unique_id = serializers.SerializerMethodField()
+    agent_name = serializers.SerializerMethodField()
+    sending_currency_name = serializers.SerializerMethodField()
+    received_currency_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Deposit
         fields = [
-            'merchant', 'customer_id', 'bank', 'agent', 'order_id',
-            'oxp_id', 'txn_id', 'sending_amount', 'sending_currency',
-            'actual_received_amount', 'received_currency', 'created_on', 'last_updated',
-            'sender_account', 'receiver_account', 'agent_commission',
-            'merchant_commission', 'status'
+            'merchant_unique_id',
+            'merchant_name',
+            'customer_id',
+            'bank',
+            'bank_name',
+            'agent_unique_id',
+            'agent_name',
+            'order_id',
+            'oxp_id',
+            'txn_id',
+            'sending_amount',
+            'sending_currency',
+            'sending_currency_name',
+            'actual_received_amount',
+            'received_currency',
+            'received_currency_name',
+            'created_on',
+            'last_updated',
+            'sender_account',
+            'receiver_account',
+            'agent_commission',
+            'merchant_commission',
+            'status'
         ]
+
+    def get_merchant_unique_id(self, obj):
+        return obj.merchant_id.unique_id
+
+    def get_merchant_name(self, obj):
+        return obj.merchant_id.name
+
+    def get_bank_name(self, obj):
+        return obj.bank.bank_name
+
+    def get_agent_unique_id(self, obj):
+        return obj.agent_id.unique_id
+
+    def get_agent_name(self, obj):
+        return obj.agent_id.name
+
+    def get_sending_currency_name(self, obj):
+        return obj.sending_currency.currency_code
+
+    def get_received_currency_name(self, obj):
+        return obj.received_currency.currency_code
 
 
 class DepositSerializer(serializers.ModelSerializer):

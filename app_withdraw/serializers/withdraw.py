@@ -3,9 +3,6 @@ from random import choice
 from PIL.ImageChops import difference
 from django.db import transaction
 from django.db.models import Q
-from pkg_resources import require
-from requests import request
-from requests.sessions import preferred_clock
 from rest_framework import serializers, status
 
 from app_bank.models.bank import BankTypeModel, AgentBankModel
@@ -15,12 +12,42 @@ from app_profile.models.merchant import MerchantProfile
 from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 from core.models.InValidTransactionId import InvalidTransactionId
-from utils.common_response import CommonResponse
-from utils.generate_order_id import generate_order_id
 from utils.optixpay_id_generator import generate_opx_id
 from utils.withdraw_commission_calculation import calculate_balances_for_withdraw
 from utils.withdraw_verify_by_sms import verify_by_sms
 
+
+class WithdrawListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Withdraw
+        fields = [
+            "merchant_unique_id",
+            "merchant_name",
+            "customer_id",
+            "bank",
+            "bank_name",
+            "agent_id",
+            "agent_name",
+            "order_id",
+            "oxp_id",
+            "txn_id",
+            "requested_amount",
+            "requested_currency",
+            "requested_currency_name",
+            "sent_amount",
+            "sent_currency",
+            "sent_currency_name",
+            "sent_currency_name",
+            "sender_account",
+            "receiver_account",
+            "agent_commission",
+            "merchant_commission",
+            "agent_amount_after_commission",
+            "merchant_amount_after_commission",
+            "agent_balance_should_be",
+            "merchant_balance_should_be",
+            "status",
+        ]
 
 class WithdrawSerializer(serializers.ModelSerializer):
     class Meta:
