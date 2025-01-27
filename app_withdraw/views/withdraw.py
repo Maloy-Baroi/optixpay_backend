@@ -62,7 +62,7 @@ class WithdrawListAPIView(APIView):
             if search_status:
                 withdraws = withdraws.filter(status=search_status)
             if bank:
-                withdraws = withdraws.filter(bank__icontains=bank)
+                withdraws = withdraws.filter(bank__bank_name__iexact=bank)
             if is_active:
                 withdraws = withdraws.filter(is_active=is_active)
 
