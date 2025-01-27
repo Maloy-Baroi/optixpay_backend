@@ -17,7 +17,7 @@ class SMSManagement(BaseModel):
     sender = models.CharField(max_length=20)
     fee = models.CharField(max_length=10)
     balance = models.CharField(max_length=10)
-    txn_id = models.CharField(max_length=20, unique=True)
+    txn_id = models.CharField(max_length=255, unique=True)
     send_date = models.DateTimeField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Unclaimed')
 

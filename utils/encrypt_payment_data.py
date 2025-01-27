@@ -25,7 +25,6 @@ def generate_aes_key_from_encryption_key(app_key, secret_key):
 def encrypt_data(data, app_key, secret_key):
     # Generate a secure AES key from the encryption key
     aes_key = generate_aes_key_from_encryption_key(app_key, secret_key)
-    print(f"AES key: {aes_key}")
 
     # Serialize data
     data_bytes = json.dumps(data).encode()
@@ -57,7 +56,6 @@ data = """{
 def encrypt_payment_data(data: str, app_key: str, secret_key: str) -> str or bool:
     try:
         encrypted_data = encrypt_data(data, app_key, secret_key)
-        print("Encrypted Data:", encrypted_data)
         return encrypted_data
     except Exception as e:
         return False

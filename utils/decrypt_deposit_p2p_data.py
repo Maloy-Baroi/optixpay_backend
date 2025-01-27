@@ -51,9 +51,7 @@ def decrypt_deposit_p2p_data(data, merchant_unique_id):
     merchant = MerchantProfile.objects.get(unique_id=merchant_unique_id)
     app_key = merchant.app_key
     global_secret_key = settings.SECRET_KEY
-    print(f"app_key: {app_key}, global_secret_key: {global_secret_key}, merchant: {merchant}")
     decrypted_data = decrypt_data(data, app_key, global_secret_key)
-    print(f"decrypted_data: {decrypted_data}")
     try:
         return decrypted_data
     except Exception as e:

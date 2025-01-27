@@ -1,10 +1,9 @@
 from app_sms.models.sms import SMSManagement
+from typing import Tuple, Optional
 
-
-def verify_by_sms(amount, txn_id, account):
-    sms = SMSManagement.objects.filter(txn_id=txn_id, sender=account, amount=amount, status='Unclaimed')
+def verify_by_sms(amount: float, txn_id: str, account: str) -> Tuple[bool, Optional[SMSManagement]]:
+    sms = SMSManagement.objects.filter(amount=float(amount), txn_id=txn_id, sender=account, status='unclaimed')
     if sms.exists():
-        return True
+        return True, sms.first()
     else:
-        return False
-
+        return False, None
