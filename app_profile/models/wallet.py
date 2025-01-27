@@ -12,6 +12,7 @@ class MerchantWallet(BaseModel):
 
     withdraw_commission = models.FloatField(default=10.00)
     deposit_commission = models.FloatField(default=5.00)
+    settlement_commission = models.FloatField(default=2.5)
 
     class Meta:
         db_table = 'merchant_wallet'

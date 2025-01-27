@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 
 from app_profile.models.merchant import MerchantProfile
 from app_settlement.models.settlement import Settlement
-from app_settlement.serializers.settlement import SettlementSerializer
+from app_settlement.serializers.settlement import SettlementListSerializer, SettlementCreateSerializer, \
+    SettlementUpdateSerializer
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -44,16 +45,14 @@ class SettlementListAPIView(APIView):
             result_page = paginator.paginate_queryset(settlements, request)
 
             if result_page is not None:
-                settlements_serializer = SettlementSerializer(result_page, many=True)
+                settlements_serializer = SettlementListSerializer(result_page, many=True)
                 return paginator.get_paginated_response(settlements_serializer.data)
             else:
-                return Response({"status": "error", "data": {}, "message": "No settlements available"},
-                                status=status.HTTP_204_NO_CONTENT)
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No settlements Record found")
+
 
         except Exception as e:
-            return Response({"status": "error", "data": {}, "message": str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No settlements Record found")
 
 
 class SettlementCreateAPIView(APIView):
@@ -62,7 +61,7 @@ class SettlementCreateAPIView(APIView):
     def post(self, request):
         try:
             merchant = MerchantProfile.objects.get(user=request.user)
-            settlement_serializer = SettlementSerializer(data=request.data,
+            settlement_serializer = SettlementCreateSerializer(data=request.data,
                                                          context={'request': request, 'merchant_id': merchant})
             if settlement_serializer.is_valid():
                 settlement_serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
@@ -71,5 +70,23 @@ class SettlementCreateAPIView(APIView):
             else:
                 return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful creation of settlement")
         except Exception as e:
-            return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful creation of settlement")
+            return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, str(e))
+
+
+class SettlementUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        try:
+            settlement = Settlement.objects.get(id=pk)
+            settlement_update_serializer = SettlementUpdateSerializer(settlement, data=request.data, partial=True)
+            if settlement_update_serializer.is_valid():
+                settlement_update_serializer.save(updated_by=request.user)
+                return CommonResponse('success', settlement_update_serializer.data, status.HTTP_200_OK,
+                                      "Successfully updated!")
+            else:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Settlement Update issue raised!")
+
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
