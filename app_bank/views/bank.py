@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from app_bank.models.bank import AgentBankModel, BankTypeModel
-from app_bank.serializers.bank import BankModelSerializer
+from app_bank.serializers.bank import BankModelSerializer, AgentBankModelListSerializer
 from rest_framework.exceptions import NotFound
 
 from app_profile.models.agent import AgentProfile
@@ -33,7 +33,7 @@ class BankListAPIView(APIView):
             if bank_id:
                 try:
                     bank = AgentBankModel.objects.get(id=int(bank_id))
-                    banks_serializers = BankModelSerializer(bank)
+                    banks_serializers = AgentBankModelListSerializer(bank)
                     return CommonResponse(
                         "success", banks_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
@@ -63,7 +63,7 @@ class BankListAPIView(APIView):
             result_page = paginator.paginate_queryset(banks, request)
 
             if result_page is not None:
-                banks_serializers = BankModelSerializer(result_page, many=True)
+                banks_serializers = AgentBankModelListSerializer(result_page, many=True)
                 return paginator.get_paginated_response(banks_serializers.data)
             else:
                 return CommonResponse("error", "No banks available", status.HTTP_204_NO_CONTENT)
