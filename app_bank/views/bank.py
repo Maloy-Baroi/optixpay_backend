@@ -26,6 +26,7 @@ class BankListAPIView(APIView):
             bank_id = request.query_params.get('bank_id', '')
             is_active = request.query_params.get('is_active', True)
             category = request.query_params.get('category', '')
+            category, usage_for = category.split("_", 1)
 
             # Filter banks based on query parameters
             banks = AgentBankModel.objects.all()
@@ -41,7 +42,7 @@ class BankListAPIView(APIView):
                     return CommonResponse("error", "bank not found", status.HTTP_204_NO_CONTENT)
 
             if category:
-                banks = banks.filter(bank_type__category__iexact=category)
+                banks = banks.filter(bank_type__category__iexact=category, usage_for__iexact=usage_for)
 
             if search_query:
                 banks = banks.filter(
