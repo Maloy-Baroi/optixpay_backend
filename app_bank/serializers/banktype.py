@@ -6,9 +6,20 @@ from utils.validationerror_return import validation_error_return
 
 
 class BankTypeModelSerializer(serializers.ModelSerializer):
+    currency_name = serializers.SerializerMethodField()
     class Meta:
         model = BankTypeModel
+        fields = [
+            "name",
+            "category",
+            "currency",
+            "currency_name",
+            "is_active",
+        ]
         exclude = ['created_by', 'updated_by']  # Exclude these fields from the input
+
+    def get_currency_name(self, obj):
+        return obj.currency.name
 
     def create(self, validated_data):
         return super().create(validated_data)
