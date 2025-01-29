@@ -94,6 +94,13 @@ class AgentBankModel(BaseModel):
     # Secret Key
     secret_key = models.CharField(max_length=255, help_text="Secret key for the application")
 
+    _STATUS = [
+        ('active', 'active'),
+        ('inactive', 'inactive'),
+        ('hold', 'hold'),
+    ]
+    status = models.CharField(max_length=50, choices=_STATUS, default='active')
+
     def __str__(self):
         return f"{self.id}-{self.bank_name}, {self.agent.name}, {self.bank_type.name}_{self.bank_type.category}"
 
