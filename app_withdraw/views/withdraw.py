@@ -198,7 +198,7 @@ class BankTypeForWithdrawCreateAPIView(APIView):
     def get(self, request):
         try:
             category = request.query_params.get('category', None)
-            if category is not None:
+            if category:
                 bank_type_names = BankTypeModel.objects.filter(Q(category__iexact=category)).values_list('name', flat=True).distinct()
             else:
                 bank_type_names = BankTypeModel.objects.values_list('name', flat=True).distinct()
