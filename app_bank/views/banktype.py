@@ -72,62 +72,40 @@ class BankTypeListAPIView(APIView):
                 "An error occurred while retrieving bank_type data"
             )
 
-    def process_or_reactivate_bank_type(self, requested_data):
-        name = requested_data.get('name')
-        bank_category = requested_data.get('category')
-        bank_currency = requested_data.get('currency')
-
-        try:
-            bank_type = BankTypeModel.objects.filter(name__iexact=name, category__iexact=bank_category).first()
-            if bank_type:
-                if bank_type.is_active:
-                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Bank Type already exists!")
-
-                bank_type.is_active = True
-                bank_type.name = name
-                bank_type.category = bank_category
-
-                try:
-                    currency = Currency.objects.get(id=bank_currency)
-                except ObjectDoesNotExist:
-                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Currency ID not found")
-
-                bank_type.currency = currency
-                bank_type.save()
-
-                serializer = BankTypeModelSerializer(bank_type)
-                if serializer.is_valid(raise_exception=True):
-                    serializer.save()
-                    return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
-                                          "Bank Type successfully reactivated and updated!")
-                else:
-                    return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST,
-                                          "Invalid data for Bank Type")
-
-            else:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-                                      "Bank Type doesn't exist and cannot be created in this method")
-
-        except Exception as e:
-            return CommonResponse("error", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST,
-                                  "An error occurred processing the request")
+class BankTypeCreateAPIView(APIView):
+    # Other methods remain unchanged...
 
     def post(self, request):
         try:
-            response = self.process_or_reactivate_bank_type(request.data)
-            if response is not None:
-                return response  # Return the response from check if it's not None
+            # Check if the same name and category exist and are currently inactive
+            existing_bank_type = BankTypeModel.objects.filter(
+                Q(name=request.data.get('name')) &
+                Q(category=request.data.get('category')) &
+                Q(is_active=False)
+            ).first()
 
-            serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
-                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
-                                      "Bank Type Successfully Created")
+            if existing_bank_type:
+                # If found, just activate it
+                existing_bank_type.is_active = True
+                existing_bank_type.updated_by = request.user
+                existing_bank_type.save(update_fields=['is_active', 'updated_by'])
+                serializer = BankTypeModelSerializer(existing_bank_type)
+                return CommonResponse("success", serializer.data, status.HTTP_200_OK,
+                                      "Bank Type reactivated successfully")
             else:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-                                      "Bank Type with this name is already exists")
+                # Otherwise, create a new bank type
+                serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
+                if serializer.is_valid():
+                    serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                    return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
+                                          "Bank Type Successfully Created")
+                else:
+                    return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST,
+                                          "Error in creating Bank Type")
+
         except Exception as e:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+            return CommonResponse("error", str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                  "An error occurred while processing your request")
 
 
 class BankTypeUpdateAPIView(APIView):
