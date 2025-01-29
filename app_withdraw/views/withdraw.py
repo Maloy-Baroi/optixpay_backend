@@ -197,7 +197,11 @@ class BankTypeForWithdrawCreateAPIView(APIView):
 
     def get(self, request):
         try:
-            bank_type_names = BankTypeModel.objects.values_list('name', flat=True).distinct()
+            category = request.query_params.get('category', None)
+            if category is not None:
+                bank_type_names = BankTypeModel.objects.filter(Q(category__iexact=category)).values_list('name', flat=True).distinct()
+            else:
+                bank_type_names = BankTypeModel.objects.values_list('name', flat=True).distinct()
             bank_type_data = [{'name': name} for name in bank_type_names]  # Convert to list of dictionaries
             bank_type_serializers = BankTypeOnlyNameSerializer(bank_type_data, many=True)
             return CommonResponse("success", bank_type_serializers.data, status.HTTP_200_OK, "Data Found!")
