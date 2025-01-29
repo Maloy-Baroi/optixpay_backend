@@ -98,7 +98,7 @@ if not DEBUG:
             'NAME': 'optixpay_db',  # Database name
             'USER': 'optixpay',  # Database user
             'PASSWORD': 'optix_pay_123',  # Database password
-            'HOST': 'localhost',  # Set to your database host
+            'HOST': '46.202.159.210',  # Set to your database host
             'PORT': '5432',  # Default PostgreSQL port
         }
     }
