@@ -89,22 +89,33 @@ class BankTypeListAPIView(APIView):
                 previously_existed_banktype.currency = Currency.objects.get(id=bank_currency)
                 previously_existed_banktype.save()
                 serializer = BankTypeModelSerializer(previously_existed_banktype)
-                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
+                if serializer.is_valid():
+                    serializer.save()
+                    return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
                                       "Currency successfully created!")
-        return None
+                else:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Bank Type Couldn't create!")
+
+        else:
+            return CommonResponse("error", {}, status.HTTP_201_CREATED,
+                                      "Bank Type Couldn't create!")
 
     def post(self, request):
-        response = self._check_if_already_exist(request.data)
-        if response is not None:
-            return response  # Return the response from check if it's not None
+        try:
+            response = self._check_if_already_exist(request.data)
+            if response is not None:
+                return response  # Return the response from check if it's not None
 
-        serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
-            return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Bank Type Successfully Created")
-        else:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-                                  "Bank Type with this name is already exists")
+            serializer = BankTypeModelSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
+                                      "Bank Type Successfully Created")
+            else:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
+                                      "Bank Type with this name is already exists")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
 
 class BankTypeUpdateAPIView(APIView):
