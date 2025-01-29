@@ -2,13 +2,13 @@ from django.urls import path
 from app_deposit.views.deposit import DepositAPIView, DepositListAPIView
 from app_deposit.views.currency import CurrencyUpdateAPIView, CurrencyListPostAPIView, CurrencyDeleteAPIView, \
     CreateCurrencyAPIView
-from app_deposit.views.deposit_p2c import DepositBKashPayView, BkashPaymentInitiateAPIView, BkashPaymentExecuteAPIView
+# from app_deposit.views.deposit_p2c import DepositBKashPayView, BkashPaymentInitiateAPIView, BkashPaymentExecuteAPIView
 from app_deposit.views.deposit_p2p import DepositPtoPCreateAPIView, DepositTransactionIdSubmitAPIView
 
 urlpatterns = [
-    path('bkash/grants/', DepositBKashPayView.as_view(), name='bkash-payment'),
-    path('bkash/create/', BkashPaymentInitiateAPIView.as_view(), name='bkash-initiate'),
-    path('bkash/execute/', BkashPaymentExecuteAPIView.as_view(), name='bkash-execute'),
+    # path('bkash/grants/', DepositBKashPayView.as_view(), name='bkash-payment'),
+    # path('bkash/create/', BkashPaymentInitiateAPIView.as_view(), name='bkash-initiate'),
+    # path('bkash/execute/', BkashPaymentExecuteAPIView.as_view(), name='bkash-execute'),
 
     path('currency/', CurrencyListPostAPIView.as_view(), name='currency-list'),  # List and Create
     path('currency/create/', CreateCurrencyAPIView.as_view(), name='currency-create'),  # List and Create
