@@ -8,7 +8,7 @@ from rest_framework import status, permissions
 # from app_deposit.models.deposit import Deposit
 from app_deposit.models.deposit import Currency
 # from app_deposit.serializers.deposit import DepositSerializer
-from app_deposit.serializers.currency import CurrencySerializer, CreateCurrencySerializer
+from app_deposit.serializers.currency import CurrencySerializer, CreateCurrencySerializer, CurrencyUpdateSerializer
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -135,7 +135,7 @@ class CurrencyUpdateAPIView(APIView):
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Missing currency identifier")
         try:
             currency = Currency.objects.get(pk=pk)
-            serializer = CurrencySerializer(currency, data=request.data, context={'request': request}, partial=True)
+            serializer = CurrencyUpdateSerializer(currency, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Successfully updated currency")
