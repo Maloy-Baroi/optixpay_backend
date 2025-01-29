@@ -6,6 +6,21 @@ from utils.validationerror_return import validation_error_return
 
 
 class BankTypeModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankTypeModel
+        exclude = ['created_by', 'updated_by']  # Exclude these fields from the input
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Set updated_by to the current user (created_by should not change on update)
+        user = self.context['request'].user
+        validated_data['updated_by'] = user
+        return super().update(instance, validated_data)
+
+
+class BankTypeGetSerializer(serializers.ModelSerializer):
     currency_name = serializers.SerializerMethodField()
     class Meta:
         model = BankTypeModel
@@ -23,16 +38,6 @@ class BankTypeModelSerializer(serializers.ModelSerializer):
 
     def get_currency_name(self, obj):
         return obj.currency.name
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        # Set updated_by to the current user (created_by should not change on update)
-        user = self.context['request'].user
-        validated_data['updated_by'] = user
-        return super().update(instance, validated_data)
-
 
 class BankTypeOnlyNameSerializer(serializers.Serializer):
     name = serializers.CharField()

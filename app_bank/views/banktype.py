@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from unicodedata import category
 
 from app_bank.models.bank import BankTypeModel
-from app_bank.serializers.banktype import BankTypeModelSerializer
+from app_bank.serializers.banktype import BankTypeModelSerializer, BankTypeGetSerializer
 from app_deposit.models.deposit import Currency
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
@@ -34,7 +34,7 @@ class BankTypeListAPIView(APIView):
             if bank_type_name:
                 try:
                     bank_type = BankTypeModel.objects.get(category=bank_type_name)
-                    bank_types_serializers = BankTypeModelSerializer(bank_type)
+                    bank_types_serializers = BankTypeGetSerializer(bank_type)
                     return CommonResponse(
                         "success", bank_types_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
@@ -61,7 +61,7 @@ class BankTypeListAPIView(APIView):
             result_page = paginator.paginate_queryset(bank_types, request)
 
             if result_page is not None:
-                bank_types_serializers = BankTypeModelSerializer(result_page, many=True)
+                bank_types_serializers = BankTypeGetSerializer(result_page, many=True)
                 return paginator.get_paginated_response(bank_types_serializers.data)
             else:
                 return CommonResponse("error", "No bank_types available", status.HTTP_204_NO_CONTENT)
