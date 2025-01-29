@@ -92,23 +92,23 @@ WSGI_APPLICATION = 'optixpay_backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 if not DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'optixpay_db',  # Database name
-            'USER': 'optixpay',  # Database user
-            'PASSWORD': 'optix_pay_123',  # Database password
-            'HOST': '46.202.159.210',  # Set to your database host
-            'PORT': '5432',  # Default PostgreSQL port
-        }
-    }
-
     # DATABASES = {
-    #         'default': {
-    #         'ENGINE': 'django.db.backends.sqlite3',
-    #         'NAME': BASE_DIR / 'db.sqlite3',
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': 'optixpay_db',  # Database name
+    #         'USER': 'optixpay',  # Database user
+    #         'PASSWORD': 'optix_pay_123',  # Database password
+    #         'HOST': '46.202.159.210',  # Set to your database host
+    #         'PORT': '5432',  # Default PostgreSQL port
     #     }
-    #  }
+    # }
+
+    DATABASES = {
+            'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+     }
 else:
     DATABASES = {
             'default': {
