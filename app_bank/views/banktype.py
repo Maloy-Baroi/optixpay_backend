@@ -95,7 +95,6 @@ class BankTypeListAPIView(APIView):
                                       "Currency successfully created!")
                 else:
                     return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Bank Type Couldn't create!")
-
         else:
             return CommonResponse("error", {}, status.HTTP_201_CREATED,
                                       "Bank Type Couldn't create!")
