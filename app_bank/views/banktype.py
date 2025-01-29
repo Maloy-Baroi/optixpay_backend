@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -71,33 +72,45 @@ class BankTypeListAPIView(APIView):
                 "An error occurred while retrieving bank_type data"
             )
 
-    def _check_if_already_exist(self, requested_data):
-        name = requested_data.get('name', None)
+    def process_or_reactivate_bank_type(self, requested_data):
+        name = requested_data.get('name')
         bank_category = requested_data.get('category')
         bank_currency = requested_data.get('currency')
-        previously_existed_banktype = BankTypeModel.objects.filter(Q(name__iexact=name) & Q(category__iexact=bank_category))
 
-        if previously_existed_banktype.exists():
-            previously_existed_banktype = previously_existed_banktype.first()
-            if previously_existed_banktype.is_active:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-                                      "Bank Type already exists!")
-            else:
-                previously_existed_banktype.is_active = True
-                previously_existed_banktype.name = name
-                previously_existed_banktype.category = bank_category
-                previously_existed_banktype.currency = Currency.objects.get(id=bank_currency)
-                previously_existed_banktype.save()
-                serializer = BankTypeModelSerializer(previously_existed_banktype)
-                if serializer.is_valid():
+        try:
+            bank_type = BankTypeModel.objects.filter(name__iexact=name, category__iexact=bank_category).first()
+            if bank_type:
+                if bank_type.is_active:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Bank Type already exists!")
+
+                bank_type.is_active = True
+                bank_type.name = name
+                bank_type.category = bank_category
+
+                try:
+                    currency = Currency.objects.get(id=bank_currency)
+                except ObjectDoesNotExist:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Currency ID not found")
+
+                bank_type.currency = currency
+                bank_type.save()
+
+                serializer = BankTypeModelSerializer(bank_type)
+                if serializer.is_valid(raise_exception=True):
                     serializer.save()
                     return CommonResponse("success", serializer.data, status.HTTP_201_CREATED,
-                                      "Currency successfully created!")
+                                          "Bank Type successfully reactivated and updated!")
                 else:
-                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Bank Type Couldn't create!")
-        else:
-            return CommonResponse("error", {}, status.HTTP_201_CREATED,
-                                      "Bank Type Couldn't create!")
+                    return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST,
+                                          "Invalid data for Bank Type")
+
+            else:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
+                                      "Bank Type doesn't exist and cannot be created in this method")
+
+        except Exception as e:
+            return CommonResponse("error", {"exception": str(e)}, status.HTTP_400_BAD_REQUEST,
+                                  "An error occurred processing the request")
 
     def post(self, request):
         try:
