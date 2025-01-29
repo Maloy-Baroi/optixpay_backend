@@ -114,7 +114,7 @@ class BankTypeListAPIView(APIView):
 
     def post(self, request):
         try:
-            response = self._check_if_already_exist(request.data)
+            response = self.process_or_reactivate_bank_type(request.data)
             if response is not None:
                 return response  # Return the response from check if it's not None
 
