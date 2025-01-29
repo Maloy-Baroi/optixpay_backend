@@ -32,7 +32,7 @@ class BankListAPIView(APIView):
 
             if bank_id:
                 try:
-                    bank = AgentBankModel.objects.get(id=bank_id)
+                    bank = AgentBankModel.objects.get(id=int(bank_id))
                     banks_serializers = BankModelSerializer(bank)
                     return CommonResponse(
                         "success", banks_serializers.data, status.HTTP_200_OK, "Data Found!"
