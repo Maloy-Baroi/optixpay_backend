@@ -22,6 +22,7 @@ class BankTypeListAPIView(APIView):
             # Extract query parameters
             page = request.query_params.get('page', 1)
             page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+            bank_type_id = request.query_params.get('bank_type_id')
             bank_type_name = request.query_params.get('bank_type_name')
             search_query = request.query_params.get('search', '')
             search_status = request.query_params.get('status', '')
@@ -30,6 +31,16 @@ class BankTypeListAPIView(APIView):
 
             # Filter bank_types based on query parameters
             bank_types = BankTypeModel.objects.all()
+
+            if bank_type_id:
+                try:
+                    bank_type = BankTypeModel.objects.get(id=bank_type_id)
+                    bank_types_serializers = BankTypeGetSerializer(bank_type)
+                    return CommonResponse(
+                        "success", bank_types_serializers.data, status.HTTP_200_OK, "Data Found!"
+                    )
+                except BankTypeModel.DoesNotExist:
+                    return CommonResponse("error", "bank_type not found", status.HTTP_204_NO_CONTENT)
 
             if bank_type_name:
                 try:
