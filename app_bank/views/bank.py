@@ -45,7 +45,7 @@ class BankListAPIView(APIView):
 
             if search_query:
                 banks = banks.filter(
-                    Q(bank_name__icontains=search_query) | Q(unique_id__icontains=search_query)
+                    Q(bank_name__icontains=search_query) | Q(bank_unique_id__icontains=search_query)
                 )
 
             if search_status:
