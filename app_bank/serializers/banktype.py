@@ -25,6 +25,7 @@ class BankTypeGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankTypeModel
         fields = [
+            "id",
             "name",
             "category",
             "currency",
