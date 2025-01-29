@@ -15,8 +15,11 @@ class BankTypeModelSerializer(serializers.ModelSerializer):
             "currency",
             "currency_name",
             "is_active",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
         ]
-        exclude = ['created_by', 'updated_by']  # Exclude these fields from the input
 
     def get_currency_name(self, obj):
         return obj.currency.name
