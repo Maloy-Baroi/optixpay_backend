@@ -37,7 +37,7 @@ class BankTypeGetSerializer(serializers.ModelSerializer):
         ]
 
     def get_currency_name(self, obj):
-        return obj.currency.name
+        return obj.currency.name if obj.currency else None
 
 class BankTypeOnlyNameSerializer(serializers.Serializer):
     name = serializers.CharField()
