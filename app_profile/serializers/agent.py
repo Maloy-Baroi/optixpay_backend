@@ -8,6 +8,7 @@ from app_profile.models.agent import AgentProfile
 class AgentProfileSerializer(serializers.ModelSerializer):
     authorization_details = serializers.SerializerMethodField()
     bank_details = serializers.SerializerMethodField()
+    balance = serializers.CharField(max_length=10, read_only=True)
 
     class Meta:
         model = AgentProfile
@@ -20,6 +21,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'phone_number',
             'bank_details',
             'currency',
+            'balance',
             'status',
             'is_active'
         ]
@@ -42,6 +44,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         try:
             bank = AgentBankModel.objects.filter(agent=obj)
             bank_serializers = BankModelSerializer(bank, many=True)
+            # print(bank_serializers.data[0].balance)
             return bank_serializers.data
         except AgentBankModel.DoesNotExist:
             return {}

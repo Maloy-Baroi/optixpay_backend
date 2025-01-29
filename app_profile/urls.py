@@ -6,7 +6,7 @@ from app_profile.views.merchant import MerchantProfileCreateAPIView, MerchantPro
     MerchantProfileDeleteAPIView, MerchantListAPIView
 from app_profile.views.profile import ProfileListCreateAPIView, ProfileRetrieveUpdateAPIView
 from app_profile.views.staff import StaffListAPIView, StaffCreateAPIView, StaffProfileUpdateAPIView, StaffProfileDeleteAPIView
-from app_profile.views.wallet import MerchantWalletListAPIView, MerchantWalletCreateAPIView
+from app_profile.views.wallet import MerchantWalletListAPIView, MerchantWalletCreateAPIView, MerchantWalletUpdateView
 
 urlpatterns = [
     path('merchants/', MerchantListAPIView.as_view(), name='create-merchant-profile'),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('staff/delete/<int:pk>/', StaffProfileDeleteAPIView.as_view(), name='delete-agent-profile'),
     path('wallets/', MerchantWalletListAPIView.as_view(), name='merchant_wallet_list'),
     path('wallet/create/', MerchantWalletCreateAPIView.as_view(), name='merchant_wallet_list'),
+    path('wallet/update/<int:id>/', MerchantWalletUpdateView.as_view(), name='merchant_wallet_list'),
 ]

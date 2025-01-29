@@ -26,8 +26,7 @@ class BankListAPIView(APIView):
             bank_id = request.query_params.get('bank_id', '')
             is_active = request.query_params.get('is_active', True)
             category = request.query_params.get('category', '')
-            category, usage_for = category.split("_", 1)
-
+            category, usage_for = category.split("_", 1) if len(category) > 0 else None, None
             # Filter banks based on query parameters
             banks = AgentBankModel.objects.all()
 

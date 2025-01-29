@@ -27,7 +27,7 @@ class SettlementListAPIView(APIView):
             settlements = Settlement.objects.all()
 
             if settlement_id:
-                settlements = settlements.filter(settlement_id=settlement_id)
+                settlements = settlements.filter(id=settlement_id)
 
             if search_query:
                 settlements = settlements.filter(
