@@ -90,9 +90,9 @@ class AgentBankModel(BaseModel):
 
     balance = models.FloatField(default=0.0, help_text="Balance")
     # App Key
-    app_key = models.CharField(max_length=255, help_text="API key for the application")
+    app_key = models.CharField(max_length=255, help_text="API key for the application", null=True, blank=True)
     # Secret Key
-    secret_key = models.CharField(max_length=255, help_text="Secret key for the application")
+    secret_key = models.CharField(max_length=255, help_text="Secret key for the application", null=True, blank=True)
 
     _STATUS = [
         ('active', 'active'),

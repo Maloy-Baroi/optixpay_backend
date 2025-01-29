@@ -84,6 +84,11 @@ class BankCreateAPIView(APIView):
             profile = None
             bank_type = str(request.data.pop('bank_type')).lower()
             bank_type, usage_for = bank_type.split("_", 1)
+            app_key = request.data.pop('app_key', None)
+            secret_key = request.data.pop('secret_key', None)
+            if bank_type == 'p2c' and usage_for == 'deposit' and not app_key and not secret_key:
+                return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, 'P2C Deposit Bank Must have app_key and secret_key')
+
             bank_method = str(request.data.pop('bank_method')).lower()
             bank_type = BankTypeModel.objects.filter(name__iexact=bank_method, category__iexact=bank_type).first()
 
