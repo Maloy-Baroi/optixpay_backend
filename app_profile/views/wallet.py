@@ -1,5 +1,6 @@
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app_profile.models.merchant import MerchantProfile
@@ -15,26 +16,25 @@ class MerchantWalletListAPIView(APIView):
     pagination_class = CustomPagination
 
     def get(self, request):
+        merchant_id = request.query_params.get('merchant_id', None)
+        if merchant_id is None:
+            return Response({"status": False, "data": {}, "message": "Didn't provide merchant id!"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            merchant_id = request.query_params.get('merchant_id', None)
-            print(f"Merchant: {merchant_id}")
+            # Assuming that each merchant has only one profile, we use `get` instead of `filter`.
+            merchant = MerchantProfile.objects.get(id=int(merchant_id))
+        except MerchantProfile.DoesNotExist:
+            return Response({"status": False, "data": {}, "message": "Merchant not found!"}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError:
+            return Response({"status": False, "data": {}, "message": "Invalid merchant ID!"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if merchant_id is None:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Didn't provide merchant id!")
-
-            merchant = MerchantProfile.objects.filter(id=int(merchant_id))
-            if merchant is None:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found!")
-
-            if merchant:
-                print("Merchant Found!")
-                wallets = merchant.merchant_wallet
-                print("Wallets:", wallets)
-                if wallets is None:
-                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Wallet not found!")
-
-        except Exception as e:
-            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+        # Assuming `merchant_wallet` is a related name for a reverse ForeignKey or OneToOneField relationship
+        wallets = merchant.merchant_wallet.all()  # Adjust according to your model relationship
+        if wallets.exists():
+            serializer = MerchantWalletSerializer(wallets, many=True)
+            return Response({"status": True, "data": serializer.data, "message": "Wallets retrieved successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": False, "data": {}, "message": "No wallets found!"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class MerchantWalletCreateAPIView(APIView):

@@ -12,6 +12,7 @@ class MerchantWalletSerializer(serializers.ModelSerializer):
     class Meta:
         model = MerchantWallet
         fields = [
+            'id',
             'bank',
             'bank_name',
             'balance',
