@@ -26,7 +26,12 @@ class BankListAPIView(APIView):
             bank_id = request.query_params.get('bank_id', '')
             is_active = request.query_params.get('is_active', True)
             category = request.query_params.get('category', '')
-            category, usage_for = category.split("_", 1) if len(category) > 0 else None, None
+            if category and "_" in category:
+                category, usage_for = category.split("_", 1)
+            else:
+                category, usage_for = None, None
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "category not found") 
+            
             # Filter banks based on query parameters
             banks = AgentBankModel.objects.all()
 
@@ -38,7 +43,7 @@ class BankListAPIView(APIView):
                         "success", banks_serializers.data, status.HTTP_200_OK, "Data Found!"
                     )
                 except AgentBankModel.DoesNotExist:
-                    return CommonResponse("error", "bank not found", status.HTTP_204_NO_CONTENT)
+                    return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "bank not found")
 
             if category:
                 banks = banks.filter(bank_type__category__iexact=category, usage_for__iexact=usage_for)
@@ -55,7 +60,7 @@ class BankListAPIView(APIView):
                 banks = banks.filter(is_active=is_active)
 
             if not banks.exists():
-                return CommonResponse("error", "No banks found", status.HTTP_204_NO_CONTENT)
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No banks found")
 
             # Apply pagination
             paginator = self.pagination_class()
@@ -66,7 +71,7 @@ class BankListAPIView(APIView):
                 banks_serializers = AgentBankModelListSerializer(result_page, many=True)
                 return paginator.get_paginated_response(banks_serializers.data)
             else:
-                return CommonResponse("error", "No banks available", status.HTTP_204_NO_CONTENT)
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "No banks available")
 
         except Exception as e:
             return CommonResponse(
