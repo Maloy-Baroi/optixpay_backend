@@ -91,7 +91,13 @@ class BankCreateAPIView(APIView):
         try:
             profile = None
             bank_type = str(request.data.pop('bank_type')).lower()
-            bank_type, usage_for = bank_type.split("_", 1)
+            usage_for = None
+            if bank_type == 'p2c_deposit':
+                bank_type, usage_for = "p2c", "deposit"
+            elif bank_type == 'p2p_deposit':
+                bank_type, usage_for = "p2p", "deposit"
+            elif bank_type == 'p2p_withdraw':
+                bank_type, usage_for = "p2p", "withdraw"
             app_key = request.data.pop('app_key', None)
             secret_key = request.data.pop('secret_key', None)
             if bank_type == 'p2c' and usage_for == 'deposit' and not app_key and not secret_key:
