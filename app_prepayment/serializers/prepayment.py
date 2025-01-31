@@ -5,11 +5,13 @@ from app_profile.models.agent import AgentProfile
 
 
 class PrepaymentSerializer(serializers.ModelSerializer):
+    agent_unique_id = serializers.CharField(source='agent_id.unique_id')
     class Meta:
         model = Prepayment
         fields = [
             'id',
             'agent_id',
+            'agent_unique_id',
             'transaction_hash',
             'amount_usdt',
             'sender_address',
@@ -45,6 +47,10 @@ class PrepaymentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         agent_id = self.context.get('agent_id')
         agent = AgentProfile.objects.get(id=agent_id)
+        exchange_rate = 128.89
+        amount_usdt = validated_data['amount_usdt']
+        validated_data['exchange_rate'] = exchange_rate
+        validated_data['converted_amount'] = float(amount_usdt) * exchange_rate
         validated_data['agent_id'] = agent
 
         return Prepayment.objects.create(**validated_data)

@@ -19,6 +19,7 @@ import json
 # Shared secret key (ensure this is securely managed, not hard-coded in production)
 SECRET_KEY = 'ebb620-d11037-56c184-d69d9e-f04a7'
 
+
 # Assuming SECRET_KEY and other constants are defined and imported correctly
 class WebhookAPIView(APIView):
     permission_classes = [AllowAny]  # This allows the endpoint to be accessed without authentication
