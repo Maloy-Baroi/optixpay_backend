@@ -32,9 +32,9 @@ class BankListAPIView(APIView):
                 category, usage_for = "p2p", "withdraw"
             elif category == 'p2c_deposit':
                 category, usage_for = "p2c", "deposit"
-            else:
-                category, usage_for = None, None
-                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "category not found") 
+            # else:
+            #     category, usage_for = None, None
+            #     return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "category not found")
             
             # Filter banks based on query parameters
             banks = AgentBankModel.objects.all()

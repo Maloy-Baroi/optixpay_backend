@@ -47,8 +47,8 @@ class MerchantWalletCreateAPIView(APIView):
             serializer = MerchantWalletCreateSerializer(data=request.data, context={"merchant_id": merchant_id})
             if serializer.is_valid():
                 serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
-                return CommonResponse("success", serializer.data(), status.HTTP_201_CREATED,
-                                      "Merchant Wallet Created Successfully!")
+                # Access the serializer.data as a property, not a method
+                return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Merchant Wallet Created Successfully!")
             else:
                 return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Unsuccessful Creation!")
         except Exception as e:

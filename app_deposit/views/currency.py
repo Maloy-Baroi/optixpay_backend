@@ -106,7 +106,7 @@ class CreateCurrencyAPIView(APIView):
         if serializer.is_valid():
             serializer.save(created_by=request.user, updated_by=request.user, is_active=True)
             return Response(
-                {'status': 'success', 'data': serializer.data, 'message': 'Successfully created/updated currency'},
+                {'status': 'success', 'data': serializer.data, 'message': 'Successfully created currency'},
                 status=status.HTTP_201_CREATED)
         else:
             # Print all serializer errors to debug
