@@ -20,58 +20,62 @@ class DepositListAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
 
-    @swagger_auto_schema(
-        operation_description="Retrieve a list of deposits",
-        manual_parameters=[
-            openapi.Parameter(
-                'search_keyword',
-                openapi.IN_QUERY,
-                description="Keyword to search deposits by customer ID, order ID, etc.",
-                type=openapi.TYPE_STRING
-            )
-        ],
-        responses={200: DepositListSerializer(many=True)}
-    )
-
+    # @swagger_auto_schema(
+    #     operation_description="Retrieve a list of deposits",
+    #     manual_parameters=[
+    #         openapi.Parameter(
+    #             'search_keyword',
+    #             openapi.IN_QUERY,
+    #             description="Keyword to search deposits by customer ID, order ID, etc.",
+    #             type=openapi.TYPE_STRING
+    #         )
+    #     ],
+    #     responses={200: DepositListSerializer(many=True)}
+    # )
+    #
+    # def get(self, request):
+    #     page = request.query_params.get('page', 1)
+    #     page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+    #     search_query = request.query_params.get('search', '')
+    #     deposit_id = request.query_params.get('deposit_id', None)
+    #     search_status = request.query_params.get('status', '')
+    #     bank = request.query_params.get('bank', '')
+    #     bank_type = request.query_params.get('bank_type', '')
+    #     is_active = request.query_params.get('is_active', 'true').lower() == 'true'
+    #
+    #     deposits = Deposit.objects.all()
+    #
+    #     if deposit_id:
+    #         deposit = Deposit.objects.filter(id=deposit_id).first()
+    #         if deposit:
+    #             serializer = DepositListSerializer(deposit)
+    #             return Response(serializer.data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response("Deposit not found", status=status.HTTP_204_NO_CONTENT)
+    #
+    #     if search_query:
+    #         deposits = deposits.filter(Q(name__icontains=search_query) | Q(unique_id__icontains=search_query))
+    #     if search_status:
+    #         deposits = deposits.filter(status=search_status)
+    #     if bank:
+    #         deposits = deposits.filter(bank__bank_name__icontains=bank)
+    #     if bank_type:
+    #         deposits = deposits.filter(bank__bank_type__category__iexact=bank_type)
+    #     if is_active:
+    #         deposits = deposits.filter(is_active=is_active)
+    #
+    #     if deposits.exists():
+    #         paginator = self.pagination_class()
+    #         paginator.page_size = int(page_size)
+    #         result_page = paginator.paginate_queryset(deposits, request)
+    #         serializer = DepositListSerializer(result_page, many=True)
+    #         return paginator.get_paginated_response(serializer.data)
+    #     else:
+    #         return Response("No deposits available", status=status.HTTP_204_NO_CONTENT)
     def get(self, request):
-        page = request.query_params.get('page', 1)
-        page_size = request.query_params.get('page_size', self.pagination_class.page_size)
-        search_query = request.query_params.get('search', '')
-        deposit_id = request.query_params.get('deposit_id', None)
-        search_status = request.query_params.get('status', '')
-        bank = request.query_params.get('bank', '')
-        bank_type = request.query_params.get('bank_type', '')
-        is_active = request.query_params.get('is_active', 'true').lower() == 'true'
-
         deposits = Deposit.objects.all()
-
-        if deposit_id:
-            deposit = Deposit.objects.filter(id=deposit_id).first()
-            if deposit:
-                serializer = DepositListSerializer(deposit)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response("Deposit not found", status=status.HTTP_204_NO_CONTENT)
-
-        if search_query:
-            deposits = deposits.filter(Q(name__icontains=search_query) | Q(unique_id__icontains=search_query))
-        if search_status:
-            deposits = deposits.filter(status=search_status)
-        if bank:
-            deposits = deposits.filter(bank__bank_name__icontains=bank)
-        if bank_type:
-            deposits = deposits.filter(bank__bank_type__category__iexact=bank_type)
-        if is_active:
-            deposits = deposits.filter(is_active=is_active)
-
-        if deposits.exists():
-            paginator = self.pagination_class()
-            paginator.page_size = int(page_size)
-            result_page = paginator.paginate_queryset(deposits, request)
-            serializer = DepositListSerializer(result_page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-        else:
-            return Response("No deposits available", status=status.HTTP_204_NO_CONTENT)
+        serializer = DepositSerializer(deposits, many=True)
+        return CommonResponse("success", serializer.data, status.HTTP_200_OK, "data found")
 
 
 class NewDepositListAPIView(APIView):
