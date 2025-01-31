@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from app_prepayment.models.prepayment import Prepayment
+from app_profile.models.agent import AgentProfile
 
 
 class PrepaymentSerializer(serializers.ModelSerializer):
@@ -33,12 +34,20 @@ class PrepaymentSerializer(serializers.ModelSerializer):
             'is_active',
             'platform_id',
             'payment_id',
+            'agent_id',
         ]
 
         extra_kwargs = {
             'agent_id': {'required': False},
             'status': {'required': False},
         }
+
+    def create(self, validated_data):
+        agent_id = self.context.get('agent_id')
+        agent = AgentProfile.objects.get(id=agent_id)
+        validated_data['agent_id'] = agent
+
+        return Prepayment.objects.create(**validated_data)
 
 class PrepaymentUpdateSerializer(serializers.ModelSerializer):
 

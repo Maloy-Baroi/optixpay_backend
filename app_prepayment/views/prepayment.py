@@ -110,11 +110,18 @@ class PrepaymentListAPIView(APIView):
 
     def post(self, request):
         try:
-            serializer = PrepaymentSerializer(data=request.data)
+            login_user = request.user
+            agent = AgentProfile.objects.filter(user=login_user).first()
+            if not agent:
+                agent_id = request.data.pop('agent_unique_id', None)
+                if agent_id:
+                    agent = AgentProfile.objects.filter(unique_id=agent_id).first()
+                if not agent:
+                    return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
+
+            serializer = PrepaymentSerializer(data=request.data, context={'agent_id': agent.id})
             if serializer.is_valid():
-                # Set the creator of the prepayment
-                agent = AgentProfile.objects.get(user=request.user)
-                serializer.save(agent_id=agent,created_by=request.user, updated_by=request.user, is_active=True, status='Pending')
+                serializer.save(created_by=request.user, updated_by=request.user, is_active=True, status='Pending')
                 return CommonResponse("success", serializer.data, status.HTTP_201_CREATED, "Successful Created")
             else:
                 return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, "Unsuccessful!")
