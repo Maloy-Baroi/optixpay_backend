@@ -42,7 +42,8 @@ class Deposit(BaseModel):
     merchant_commission = models.FloatField(default=0.0)  # Merchant commission
     STATUS_CHOICES = [
         ('processing', 'processing'),
-        ('successful', 'successful'),
+        ('assigned', 'assigned'),
+        ('success', 'success'),
         ('failed', 'failed'),
         ('cancelled', 'cancelled'),
         ('expired', 'expired'),

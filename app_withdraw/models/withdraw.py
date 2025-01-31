@@ -37,7 +37,7 @@ class Withdraw(BaseModel):
     merchant_balance_should_be = models.FloatField(default=0)
     STATUS_CHOICES = [
         ('assigned', 'assigned'),
-        ('successful', 'successful'),
+        ('success', 'success'),
         ('failed', 'failed'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # Status of the deposit

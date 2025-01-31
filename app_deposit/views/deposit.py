@@ -128,21 +128,28 @@ class DepositCreateAPIView(APIView):
     serializer_class = DepositInternalCreateSerializer
 
     def post(self, request, *args, **kwargs):
-        login_user = request.user
-        merchants = MerchantProfile.objects.filter(user=login_user)
+        try:
+            login_user = request.user
+            merchants = MerchantProfile.objects.filter(user=login_user)
 
-        if merchants.exists():
-            merchant = merchants.first()
-        else:
-            merchant_id = request.data.pop("merchant_id", None)
-            if merchant_id is None:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found")
+            if merchants.exists():
+                merchant = merchants.first()
             else:
-                merchant = MerchantProfile.objects.get(id=merchant_id)
+                merchant_id = request.data.pop("merchant_id", None)
+                if merchant_id is None:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found")
+                else:
+                    merchant = MerchantProfile.objects.filter(id=merchant_id)
+                    if merchant.exists():
+                        merchant = merchant.first()
+                    else:
+                        return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found")
 
-        serializer = DepositInternalCreateSerializer(data=request.data, context={'merchant_id': merchant})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer = DepositInternalCreateSerializer(data=request.data, context={'merchant_id': merchant})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
