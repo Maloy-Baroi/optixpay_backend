@@ -142,7 +142,7 @@ class WithdrawCreateP2PExternalAPIView(APIView):
 
 
 class WithdrawUpdateAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAgentUser]
+    permission_classes = [IsAuthenticated]
 
     def _check_transaction_id_validity(self, transaction_id):
         if transaction_id is None:

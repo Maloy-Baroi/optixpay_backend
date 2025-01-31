@@ -26,3 +26,9 @@ class Prepayment(BaseModel):
     class Meta:
         db_table = 'prepayment'
 
+
+    def save(self, *args, **kwargs):
+        self.exchange_rate = 128.89
+        self.converted_amount = float(self.amount_usdt) * 129.1
+        super(Prepayment, self).save(*args, **kwargs)
+

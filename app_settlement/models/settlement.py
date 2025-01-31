@@ -18,7 +18,7 @@ class Settlement(BaseModel):
     commission_percentage = models.FloatField(default=0) # fees
     # Newly added fields
     commission_amount = models.FloatField(default=0)
-    exchange_rate = models.FloatField(default=2.5)
+    exchange_rate = models.FloatField(default=0)
 
     amount_after_commission = models.FloatField(default=0)
     amount_in_usd = models.FloatField(default=0)
