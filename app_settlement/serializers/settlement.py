@@ -12,7 +12,7 @@ class SettlementListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Settlement
-        fields = ['id', 'settlement_id', 'merchant_unique_id', 'merchant_name', 'currency', 'currency_code', 'amount', 'commission_percentage',
+        fields = ['id', 'settlement_id', 'merchant_unique_id', 'merchant_name', 'currency', 'exchange_rate', 'currency_code', 'amount', 'commission_percentage',
                   'amount_after_commission', 'txn_id', 'usdt_address', 'status', 'created_at', 'updated_at']
 
 

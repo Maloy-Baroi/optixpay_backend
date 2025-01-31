@@ -100,8 +100,8 @@ class WithdrawCreateAPIView(APIView):
             # if app_key is None and secret_key is None:
             #     return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
             if request.user.groups.filter(name='admin').exists():
-                merchant_id = request.data.get('merchant_id')
-                merchant = MerchantProfile.objects.filter(id=merchant_id).first()
+                merchant_unique_id = request.data.pop('unique_id')
+                merchant = MerchantProfile.objects.filter(unique_id=merchant_unique_id).first()
             else:
                 merchant = MerchantProfile.objects.filter(user=request.user).first()
 
