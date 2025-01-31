@@ -18,6 +18,7 @@ class PrepaymentSerializer(serializers.ModelSerializer):
             'platform_id',
             'payment_id',
             'status',
+            'note',
             'created_by',
             'updated_by',
             'created_at',
@@ -25,7 +26,13 @@ class PrepaymentSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = [
-            'created_by', 'updated_by', 'created_at', 'updated_at', 'is_active'
+            'created_by',
+            'updated_by',
+            'created_at',
+            'updated_at',
+            'is_active',
+            'platform_id',
+            'payment_id',
         ]
 
         extra_kwargs = {
@@ -47,6 +54,7 @@ class PrepaymentUpdateSerializer(serializers.ModelSerializer):
             'exchange_rate',
             'converted_amount',
             'status',
+            'note',
             'is_active',
             'created_by',
             'updated_by',

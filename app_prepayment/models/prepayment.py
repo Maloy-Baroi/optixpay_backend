@@ -20,7 +20,7 @@ class Prepayment(BaseModel):
     converted_amount = models.FloatField(default=0.0)
     platform_id = models.CharField(max_length=100)
     payment_id = models.CharField(max_length=100)
-    # note = models.TextField(blank=True)
+    note = models.TextField(blank=True)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES)
 
     class Meta:
