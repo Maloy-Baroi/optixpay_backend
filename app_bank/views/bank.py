@@ -28,7 +28,7 @@ class BankListAPIView(APIView):
             category = request.query_params.get('category', '')
             if category =='p2p_deposit':
                 category, usage_for = "p2p", "deposit"
-            elif category =='p2p_withdrawal':
+            elif category =='p2p_withdraw':
                 category, usage_for = "p2p", "withdraw"
             elif category == 'p2c_deposit':
                 category, usage_for = "p2c", "deposit"
