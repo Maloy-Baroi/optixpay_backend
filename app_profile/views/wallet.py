@@ -17,7 +17,13 @@ class MerchantWalletListAPIView(APIView):
 
     def get(self, request):
         try:
-            merchant_id = request.query_params.get('merchant_id', None)
+            login_user = request.user
+
+            merchant = MerchantProfile.objects.filter(user=login_user)
+            if merchant.exists():
+                merchant_id = merchant.first().id
+            else:
+                merchant_id = request.query_params.get('merchant_id', None)
             wallet_id = request.query_params.get('wallet_id', None)
             if merchant_id is None:
                 return Response({"status": False, "data": {}, "message": "Didn't provide merchant id!"},

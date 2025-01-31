@@ -266,3 +266,33 @@ class DepositPutRequestSerializer(serializers.ModelSerializer):
             'call_back_url'
         ]
 
+
+class DepositInternalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deposit
+        fields = [
+            'merchant_id', 'customer_id', 'bank', 'agent_id',
+            'order_id', 'oxp_id', 'txn_id', 'sending_amount',
+            'sending_currency', 'actual_received_amount', 'received_currency',
+            'created_on', 'last_updated', 'sender_account', 'receiver_account',
+            'agent_commission', 'merchant_commission', 'status', 'call_back_url'
+        ]
+        read_only_fields = ['merchant_id', 'agent_id', 'bank', 'oxp_id', 'txn_id', 'actual_received_amount',
+                            'agent_commission', 'received_currency', 'created_on', 'last_updated']
+
+    def create(self, validated_data):
+        # Automatically generate UUID for oxp_id and txn_id if not provided
+        validated_data['oxp_id'] = generate_opx_id()
+        merchant_id = self.context.get('merchant_id')
+        agent_phone_number = validated_data.get('receiver_account')
+        agent_bank = AgentBankModel.objects.get(account_number=agent_phone_number)
+        agent_id = agent_bank.agent
+        deposit_commission = agent_bank.deposit_commission
+        validated_data['merchant_id'] = merchant_id
+        validated_data['bank'] = agent_bank
+        validated_data['agent_id'] = agent_id
+        validated_data['actual_received_amount'] = validated_data['sending_amount']
+        validated_data['received_currency'] = validated_data['sending_currency']
+        validated_data['agent_commission'] = deposit_commission
+        return super().create(validated_data)
+

@@ -1,11 +1,14 @@
 from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from app_deposit.models.deposit import Deposit
-from app_deposit.serializers.deposit import DepositListSerializer, DepositCreateSerializer, DepositSerializer
+from app_deposit.serializers.deposit import DepositListSerializer, DepositCreateSerializer, DepositSerializer, \
+    DepositInternalCreateSerializer
+from app_profile.models.merchant import MerchantProfile
 
 from app_profile.models.profile import Profile
 from services.pagination import CustomPagination
@@ -119,3 +122,27 @@ class DepositAPIView(APIView):
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
 
 
+class DepositCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Deposit.objects.all()
+    serializer_class = DepositInternalCreateSerializer
+
+    def post(self, request, *args, **kwargs):
+        login_user = request.user
+        merchants = MerchantProfile.objects.filter(user=login_user)
+
+        if merchants.exists():
+            merchant = merchants.first()
+        else:
+            merchant_id = request.data.pop("merchant_id", None)
+            if merchant_id is None:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found")
+            else:
+                merchant = MerchantProfile.objects.get(id=merchant_id)
+
+        serializer = DepositInternalCreateSerializer(data=request.data, context={'merchant_id': merchant})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
