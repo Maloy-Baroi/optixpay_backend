@@ -1,10 +1,28 @@
 from rest_framework import serializers
 
+from app_bank.serializers.banktype import BankTypeOnlyNameSerializer
 from app_profile.models.merchant import MerchantProfile
+from app_profile.models.wallet import MerchantWallet
+
+
+class MerchantWalletForMerchantProfileSerializer(serializers.ModelSerializer):
+    balance_amount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MerchantWallet
+        fields = [
+            'id',
+            'balance_amount',
+        ]
+
+    def get_balance_amount(self, obj):
+        return f"{obj.wallet_base_currency.currency_code} {obj.balance}"
 
 
 class MerchantProfileSerializer(serializers.ModelSerializer):
     authorization_details = serializers.SerializerMethodField()
+    merchant_wallet = MerchantWalletForMerchantProfileSerializer(many=True, read_only=True)
+    payment_methods = BankTypeOnlyNameSerializer(many=True, read_only=True)
 
     class Meta:
         model = MerchantProfile
@@ -25,6 +43,9 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
             "email": obj.user.email,
             "username": obj.user.username,
         }
+
+    def get_merchant_wallet(self, obj):
+        obj
 
 
 class MerchantUpdateProfileSerializer(serializers.ModelSerializer):
