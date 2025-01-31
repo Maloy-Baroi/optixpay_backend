@@ -26,8 +26,12 @@ class BankListAPIView(APIView):
             bank_id = request.query_params.get('bank_id', '')
             is_active = request.query_params.get('is_active', True)
             category = request.query_params.get('category', '')
-            if category and "_" in category:
-                category, usage_for = category.split("_", 1)
+            if category =='p2p_deposit':
+                category, usage_for = "p2p", "deposit"
+            elif category =='p2p_withdrawal':
+                category, usage_for = "p2p", "withdraw"
+            elif category == 'p2c_deposit':
+                category, usage_for = "p2c", "deposit"
             else:
                 category, usage_for = None, None
                 return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "category not found") 
