@@ -86,6 +86,14 @@ class DepositListAPIView(APIView):
         except Exception as e:
             return CommonResponse("error", [], status.HTTP_204_NO_CONTENT, "Agent not found")
 
+class NewDepositListAPIView(APIView):
+    permission_classes = (permissions.IsAuthenticated)
+
+    def get(self, request):
+        deposits = Deposit.objects.all()
+        serializer = DepositListSerializer(deposits, many=True)
+
+
 class DepositAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, pk=None):

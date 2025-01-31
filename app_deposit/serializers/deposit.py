@@ -58,25 +58,25 @@ class DepositListSerializer(serializers.ModelSerializer):
         ]
 
     def get_merchant_unique_id(self, obj):
-        return obj.merchant_id.unique_id
+        return obj.merchant_id.unique_id if obj.merchant_id else ""
 
     def get_merchant_name(self, obj):
-        return obj.merchant_id.name
+        return obj.merchant_id.name if obj.merchant_id.name else ""
 
     def get_bank_name(self, obj):
-        return obj.bank.bank_name
+        return obj.bank.bank_name if obj.bank.bank_name else ""
 
     def get_agent_unique_id(self, obj):
-        return obj.agent_id.unique_id
+        return obj.agent_id.unique_id if obj.agent_id else ""
 
     def get_agent_name(self, obj):
-        return obj.agent_id.name
+        return obj.agent_id.name if obj.agent_id.name else ""
 
     def get_sending_currency_name(self, obj):
-        return obj.sending_currency.currency_code
+        return obj.sending_currency.currency_code if obj.sending_currency.currency_code else ""
 
     def get_received_currency_name(self, obj):
-        return obj.received_currency.currency_code
+        return obj.received_currency.currency_code if obj.received_currency.currency_code else ""
 
 
 class DepositSerializer(serializers.ModelSerializer):
