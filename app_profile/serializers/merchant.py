@@ -44,8 +44,11 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
             "username": obj.user.username,
         }
 
-    def get_merchant_wallet(self, obj):
-        obj
+
+class MerchantDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MerchantProfile
+        fields = ['id', 'unique_id', 'status', 'is_active', 'app_key', 'secret_key']
 
 
 class MerchantUpdateProfileSerializer(serializers.ModelSerializer):

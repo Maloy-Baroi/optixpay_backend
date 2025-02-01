@@ -6,10 +6,25 @@ from rest_framework import status
 
 from app_auth.models import CustomUser, CustomGroup
 from app_profile.models.merchant import MerchantProfile
-from app_profile.serializers.merchant import MerchantProfileSerializer, MerchantUpdateProfileSerializer
+from app_profile.serializers.merchant import MerchantProfileSerializer, MerchantUpdateProfileSerializer, \
+    MerchantDetailsSerializer
 from app_profile.serializers.user import UserListSerializer
+from services.is_merchant import IsMerchantUser
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
+
+
+class MerchantDetailsAPIView(APIView):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+
+    def get(self, request):
+        try:
+            merchant = MerchantProfile.objects.get(user=request.user)
+            print("Merchant: ", merchant)
+            merchant_serializers = MerchantDetailsSerializer(merchant)
+            return CommonResponse("success", merchant_serializers.data, status.HTTP_200_OK, "Merchant data found!")
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Merchant not found")
 
 
 class MerchantListAPIView(APIView):
