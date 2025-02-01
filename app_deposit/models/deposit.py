@@ -40,6 +40,10 @@ class Deposit(BaseModel):
     receiver_account = models.CharField(max_length=20)  # Agent's bank number
     agent_commission = models.FloatField(default=0.0)  # Agent commission
     merchant_commission = models.FloatField(default=0.0)  # Merchant commission
+    agent_amount_after_commission = models.FloatField(default=0)
+    merchant_amount_after_commission = models.FloatField(default=0)
+    agent_balance_should_be = models.FloatField(default=0)
+    merchant_balance_should_be = models.FloatField(default=0)
     STATUS_CHOICES = [
         ('processing', 'processing'),
         ('assigned', 'assigned'),
