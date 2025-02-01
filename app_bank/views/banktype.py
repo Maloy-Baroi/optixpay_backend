@@ -90,8 +90,8 @@ class BankTypeCreateAPIView(APIView):
         try:
             # Check if the same name and category exist and are currently inactive
             existing_bank_type = BankTypeModel.objects.filter(
-                Q(name=request.data.get('name')) &
-                Q(category=request.data.get('category')) &
+                Q(name__iexact=request.data.get('name')) &
+                Q(category__iexact=request.data.get('category')) &
                 Q(is_active=False)
             ).first()
 
