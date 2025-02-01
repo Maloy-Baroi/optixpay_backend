@@ -55,33 +55,27 @@ class AgentBankModel(BaseModel):
         max_length=50,
     )
     minimum_amount = models.FloatField(
-        validators=[MinValueValidator(1.00)],
-        default=1.00,
+        default=1,
         help_text="Minimum amount allowed"
     )
     maximum_amount = models.FloatField(
-        validators=[MinValueValidator(1.00), MaxValueValidator(25000.00)],
-        default=25000.00,
+        default=1,
         help_text="Maximum amount allowed"
     )
     daily_limit = models.FloatField(
-        validators=[MinValueValidator(0.0)],
-        default=0.0,
+        default=1,
         help_text="Daily transaction limit"
     )
     daily_usage = models.FloatField(
-        validators=[MinValueValidator(0.0)],
-        default=0.0,
+        default=1,
         help_text="Daily usage so far"
     )
     monthly_limit = models.FloatField(
-        validators=[MinValueValidator(0.0)],
-        default=0.0,
+        default=1,
         help_text="Monthly transaction limit"
     )
     monthly_usage = models.FloatField(
-        validators=[MinValueValidator(0.0)],
-        default=0.0,
+        default=1,
         help_text="Monthly usage so far"
     )
 
