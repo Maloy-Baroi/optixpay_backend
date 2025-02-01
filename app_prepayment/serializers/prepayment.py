@@ -37,6 +37,7 @@ class PrepaymentSerializer(serializers.ModelSerializer):
             'platform_id',
             'payment_id',
             'agent_id',
+            'agent_unique_id',
         ]
 
         extra_kwargs = {
