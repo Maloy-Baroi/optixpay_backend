@@ -121,7 +121,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 signature = None
 
                 if "agent" in groups:
-                    agent = AgentProfile.objects.filter(user=user).only('prepayment_address').first()
+                    agent = AgentProfile.objects.filter(user=user).first()
                     if agent and not agent.prepayment_address:
                         result = x_signature_generate(user_id=user.id)
                         if result and result['address']:

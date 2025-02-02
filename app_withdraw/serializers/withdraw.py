@@ -239,8 +239,10 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             validated_data['created_by'] = merchant_id.user
             validated_data['updated_by'] = merchant_id.user
 
+            print("Before withdraw")
+
             # Create the Withdraw instance
-            withdraw = Withdraw(
+            withdraw = Withdraw.objects.create(
                 merchant_id=validated_data['merchant_id'],
                 customer_id=validated_data['customer_id'],
                 bank=validated_data['bank'],
@@ -266,6 +268,8 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
                 updated_by=validated_data['updated_by'],
             )
 
+            print('Withdraw created')
+
             merchant_new_balance, agent_new_balance, merchant_commission_amount_n_balance, agent_commission_amount_n_balance = calculate_balances_for_withdraw(
                 requested_amount=converted_amount,
                 merchant_balance=wallet.balance,
@@ -281,6 +285,7 @@ class WithdrawCreateSerializer(serializers.ModelSerializer):
             withdraw.agent_amount_after_commission = agent_commission_amount_n_balance
             withdraw.merchant_amount_after_commission = merchant_commission_amount_n_balance
             withdraw.save()
+            print("Withdraw: ", withdraw)
 
             return withdraw
         except Exception as e:
