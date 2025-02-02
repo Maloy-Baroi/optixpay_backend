@@ -134,6 +134,7 @@ class WithdrawCreateP2PExternalAPIView(APIView):
                 return CommonResponse("error", {}, status.HTTP_401_UNAUTHORIZED, "Authorization Error!")
             else:
                 merchant = MerchantProfile.objects.filter(unique_id=unique_id).first()
+                print("Merchant", merchant)
                 loggedin_user = merchant.user
 
             serializer = WithdrawCreateSerializer(data=request.data, context={'request': request, 'app_key': merchant.app_key, 'secret_key': merchant.secret_key, "bank_name": bank_name})

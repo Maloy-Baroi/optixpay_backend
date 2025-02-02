@@ -4,7 +4,6 @@ from app_profile.views.agent import AgentProfileCreateAPIView, AgentProfileUpdat
     AgentDetailsAPIView
 from app_profile.views.merchant import MerchantProfileCreateAPIView, MerchantProfileUpdateAPIView, \
     MerchantProfileDeleteAPIView, MerchantListAPIView, MerchantDetailsAPIView
-from app_profile.views.profile import ProfileListCreateAPIView, ProfileRetrieveUpdateAPIView
 from app_profile.views.staff import StaffListAPIView, StaffCreateAPIView, StaffProfileUpdateAPIView, StaffProfileDeleteAPIView
 from app_profile.views.wallet import MerchantWalletListAPIView, MerchantWalletCreateAPIView, MerchantWalletUpdateView
 
