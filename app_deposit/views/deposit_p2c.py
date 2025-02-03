@@ -14,6 +14,7 @@ from app_bank.models.bank import BankTypeModel, AgentBankModel
 from app_deposit.models.deposit import Deposit, Currency
 from app_profile.models.agent import AgentProfile
 from app_profile.models.merchant import MerchantProfile
+from utils.bkash_pay_grant import grant_token
 from utils.common_response import CommonResponse
 from utils.invoice_generate import generate_invoice_number
 from utils.optixpay_id_generator import generate_opx_id
@@ -32,7 +33,6 @@ class VerifyMerchantView(APIView):
             # optixpay_component = request.data.get('optixpay_component')
             payment_method = request.data.get('payment_method')
             order_id = request.data.get('order_id', None)
-            custom_id = request.data.get('custom_id', None)
             print("Bank category: ", payment_method)
             merchant = MerchantProfile.objects.filter(unique_id=unique_id).first()
             customer_id = request.data.get('customer_id', None)
@@ -114,7 +114,7 @@ class VerifyMerchantView(APIView):
                         customer_id=customer_id if customer_id else f"customer{random.randint(100000, 9999999999999)}",
                         bank=selected_bank_obj,
                         agent_id=agent_profile,
-                        order_id= order_id if order_id else f"order{random.randint(100000, 9999999999999)}",
+                        order_id= get_unique_default(),
                         oxp_id=generate_opx_id(),
                         txn_id=get_unique_default(),
                         sending_amount=0,
@@ -170,50 +170,13 @@ class DepositBKashPayView(APIView):
             print("Bank obj: ", bank_obj)
             merchant = MerchantProfile.objects.filter(unique_id=merchant_unique_id).first()
             print("Merchant obj: ", merchant)
-            # if not merchant:
-            #     return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-            #                           "Merchant is not found!")
 
             agent_bank_username = request.data.get('username', None)
-            print("Agent Bank username: ", agent_bank_username)
             agent_bank_password = request.data.get('password', None)
-            print("Agent Bank password: ", agent_bank_password)
             payment_amount = request.data.get('payment_amount', None)
-            print("Payment amount: ", payment_amount)
             payment_method = request.data.get('payment_method', None)
-            print("Payment method: ", payment_method)
             payment_currency = request.data.get('payment_currency', None)
-            print("Payment currency: ", payment_currency)
             deposit_id = request.data.get('deposit_id', None)
-            print("Deposit ID: ", deposit_id)
-
-            # merchant_wallets = merchant.merchant_wallet.all()
-            # print("Merchant wallets: ", merchant_wallets)
-            # merchant_wallet = merchant_wallets.filter(bank=bank_obj.bank_type).first()
-            # print("Merchant wallet: ", merchant_wallet)
-            # merchant_commission = 5
-            #
-            # deposit = Deposit.objects.filter(id=int(deposit_id)).first()
-            # print("deposit: ", deposit)
-            # deposit.sending_amount = payment_amount
-            # agent_bank = deposit.bank
-            # agent_commission = 10.0
-            # a,b,c,d = calculate_balances_for_deposit(
-            #     requested_amount=payment_amount,
-            #     merchant_balance=merchant_wallet.balance,
-            #     agent_balance=agent_bank.balance,
-            #     merchant_commission=merchant_commission,
-            #     agent_commission=agent_commission
-            # )
-            # agent_amount_after_commission = a
-            # merchant_amount_after_commission = b
-            # agent_balance_should_be = c
-            # merchant_balance_should_be = d
-            # deposit.agent_amount_after_commission = agent_amount_after_commission
-            # deposit.merchant_amount_after_commission = merchant_amount_after_commission
-            # deposit.agent_balance_should_be = agent_balance_should_be
-            # deposit.merchant_balance_should_be = merchant_balance_should_be
-            # deposit.save()
 
             # Define the headers
             headers = {
@@ -229,76 +192,21 @@ class DepositBKashPayView(APIView):
                 "app_key": bank_obj.app_key,
                 "app_secret": bank_obj.secret_key
             }
-            print(f"Appkey: {bank_obj.app_key}, secret: {bank_obj.secret_key}")
-            # Make the request to the external API using requests
-            # response = requests.post(
-            #     "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
-            #     json=data,
-            #     headers=headers
-            # )
-            # Make the request to the external API using requests
-            response = requests.post(
-                "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
-                json=data,
-                headers=headers
-            )
 
-            print("Response: ", response)
-            print("Response status: ", response.status_code)
-            print("Response json: ", response.json())
+            result = grant_token(bank_obj.app_key, bank_obj.secret_key, agent_bank_username, agent_bank_password)
 
             # Check if the response is successful
-            if str(response.status_code) == "200":
-                response_json = response.json()
-                response_json_dictionary = dict(response_json)
+            if result:
+                response_json_dictionary = dict(result)
+                response_json_dictionary['app_key'] = bank_obj.app_key
+                response_json_dictionary['app_secret'] = bank_obj.secret_key
+                response_json_dictionary['phone_number'] = agent_bank_username
+                response_json_dictionary['password'] = agent_bank_password
+
                 id_token = response_json_dictionary.get('id_token')
+                deposit_unique_id = response_json_dictionary.get('paymentID')
                 if id_token:
-                    # sandbox = bkash_create_sandbox(
-                    #     call_back_path="http://localhost:3000/",
-                    #     amount=payment_amount,
-                    #     currency=payment_currency,
-                    #     invoice_number=invoice_number,
-                    #     merchant_id=username,
-                    #     id_token=id_token,
-                    #     x_app_key=app_key,
-                    #     username=username
-                    # )
-
-                    # create_payment = Payment(merchant=merchant,
-                    #                          amount=int(payment_amount),
-                    #                          currency=payment_currency,
-                    #                          paymentMethod=payment_method,
-                    #                          created_by=merchant.user,
-                    #                          updated_by=merchant.user)
-                    # create_payment.commission = (int(create_payment.amount) * settings.COMMISSION) / 100
-                    # create_payment.after_commission = create_payment.amount - create_payment.commission
-                    # create_payment.save()
-                    # deposit = Deposit(
-                    #     merchant_id=merchant,
-                    #     customer_id="",
-                    #     bank=bank_obj,
-                    #     agent_id=bank_obj.agent_id,
-                    #     order_id="",
-                    #     oxp_id="",
-                    #     txn_id="",
-                    #     sending_amount=payment_amount,
-                    #     sending_currency="",
-                    #     actual_received_amount=payment_amount,
-                    #     received_currency=payment_currency,
-                    #     sender_account="",
-                    #     receiver_account=bank_obj.account_number,
-                    #     agent_commission=0.0,
-                    #     merchant_commission=0.0,
-                    #     status="processing",
-                    #     call_back_url="",
-                    # )
-
-                    return CommonResponse("success", {"id_token": id_token, "payment_id": deposit_id}, status.HTTP_200_OK, "Success")
-
-                    # return Response({"message": "Auth Token Found!", "data": {"id_token": id_token, "payment_id": deposit_id}}, status=status.HTTP_200_OK)
-            elif response.status_code == 401:
-                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
-                                      "Failed to authenticate with BKA API")
+                    return CommonResponse("success", {"response_data": response_json_dictionary, "payment_id": deposit_id}, status.HTTP_200_OK, "Success")
             else:
                 return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST,
                                       "Failed to authenticate with BKA API")
@@ -314,15 +222,24 @@ class BkashPaymentInitiateAPIView(APIView):
         # Extract individual fields from the request data
         try:
             token = request.data.get('id_token')  # Extract id_token from request
-            x_app_key = request.data.get("x_app_key", "0vWQuCRGiUX7EPVjQDr0EUAYtc")  # Default value if not present
+            deposit_id = request.data.get("deposit_id", None)  # Default value if not present
+            print("Deposit", deposit_id)
+            x_app_key = request.data.get("x_app_key", None)  # Default value if not present
+            if x_app_key is None:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "X-App Key is not given")
+
             payer_reference = request.data.get('payer_reference', "")  # Default payer reference
-            callback_url = request.data.get("callback_url", "http://optixpay.com/call-back/")  # Default callback URL
+            callback_url = request.data.get("callback_url", "https://optixpay.com/call-back/")  # Default callback URL
             merchant_association_info = request.data.get('merchant_association_info',
                                                          "MI05MID54RF091234560ne")  # Default info
             amount = str(request.data.get('amount', "1"))  # Convert amount to string and default to "1"
             currency = request.data.get('currency', "BDT")  # Default currency is BDT
             intent = request.data.get('intent', "authorization")  # Default intent
             invoice_number = generate_invoice_number()  # Generate the unique invoice number
+
+            deposit = Deposit.objects.filter(id=int(deposit_id)).first()
+            if not deposit:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Deposit not found")
 
             if token:
                 url = f"{settings.BKASH_BASE_URL}/tokenized/checkout/create"
@@ -345,6 +262,8 @@ class BkashPaymentInitiateAPIView(APIView):
 
                 # Make the POST request
                 response = requests.post(url, json=data, headers=headers)
+                deposit.txn_id = response.json().get('paymentID')
+                deposit.save()
 
                 # Handle the response based on status code
                 if response.status_code == 200:
@@ -371,8 +290,10 @@ class BkashPaymentExecuteAPIView(APIView):
             x_app_key = request.data.get('x_app_key')
             if id_token:
                 deposit_id = request.data.get('deposit_id')
+                deposit_obj = Deposit.objects.get(id=int(deposit_id))
+
                 payload = json.dumps({
-                    "paymentID": deposit_id
+                    "paymentID": deposit_obj.txn_id
                 })
                 url = f"{settings.BKASH_BASE_URL}/tokenized/checkout/execute"
                 headers = {
@@ -381,16 +302,15 @@ class BkashPaymentExecuteAPIView(APIView):
                     'x-app-key': x_app_key,
                 }
 
-                deposit_obj = Deposit.objects.get(id=int(deposit_id))
-
                 response = requests.request("POST", url, headers=headers, data=payload)
+                print("Response: ", response.text)
 
                 if response.status_code == 200 and response.json().get('transactionStatus') and response.json().get(
                         'transactionStatus') == 'Authorized':
 
-                    deposit_obj.order_id = response.json().get('paymentID')
+                    deposit_obj.order_id = response.json().get('paymentID') if response.json().get('paymentID') else get_unique_default()
                     # payment_obj.paymentID = response.json().get('paymentID')
-                    deposit_obj.txn_id = response.json().get('trxID')
+                    deposit_obj.txn_id = response.json().get('trxID') if response.json().get('trxID') else get_unique_default()
                     # payment_obj.intent = response.json().get('intent')
                     # payment_obj.merchantInvoiceNumber = response.json().get('merchantInvoiceNumber')
                     # payment_obj.payerType = response.json().get('payerType')
