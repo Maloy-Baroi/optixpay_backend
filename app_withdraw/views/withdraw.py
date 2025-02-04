@@ -42,7 +42,6 @@ class WithdrawListAPIView(APIView):
             search_query = request.query_params.get('search', '')
             search_status = request.query_params.get('status', '')
             bank = request.query_params.get('bank', '')
-            is_active = request.query_params.get('is_active', True)
 
             # Filter withdraws based on query parameters
             withdraws = Withdraw.objects.all()
@@ -65,8 +64,6 @@ class WithdrawListAPIView(APIView):
                 withdraws = withdraws.filter(status=search_status)
             if bank:
                 withdraws = withdraws.filter(bank__bank_name__iexact=bank)
-            if is_active:
-                withdraws = withdraws.filter(is_active=is_active)
 
             if not withdraws.exists():
                 return CommonResponse("error", "No withdraws found", status.HTTP_204_NO_CONTENT)
