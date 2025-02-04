@@ -18,7 +18,12 @@ def grant_token(app_key, app_secret, username, password):
         'password': password
     }
 
-    response = requests.post(url, headers=headers, data=payload)
+    proxies = {
+        'http': 'http://10.10.1.10:3128',
+        'https': 'https://10.10.1.10:1080',
+    }
+
+    response = requests.post(url, headers=headers, data=payload, proxies=proxies)
     if response.status_code == 200:
         return response.json()
     else:
