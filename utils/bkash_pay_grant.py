@@ -22,7 +22,7 @@ def grant_token(app_key, app_secret, username, password):
     #     'https': 'https://46.202.159.210:8000',
     # }
 
-    response = requests.post(url, headers=headers, data=payload, proxies=proxies)
+    response = requests.post(url, headers=headers, data=payload)
     if response.status_code == 200:
         return response.json()
     else:
