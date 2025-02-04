@@ -19,8 +19,7 @@ def grant_token(app_key, app_secret, username, password):
     }
 
     proxies = {
-        'http': 'http://10.10.1.10:3128',
-        'https': 'https://10.10.1.10:1080',
+        'https': 'https://46.202.159.210:8000',
     }
 
     response = requests.post(url, headers=headers, data=payload, proxies=proxies)
