@@ -70,7 +70,9 @@ class DepositListAPIView(APIView):
             paginator = self.pagination_class()
             paginator.page_size = int(page_size)
             result_page = paginator.paginate_queryset(deposits, request)
+            print("Result Page: ", result_page)
             serializer = DepositListSerializer(result_page, many=True)
+            print("Deposit Serialziers Data: ", serializer.data)
             return paginator.get_paginated_response(serializer.data)
         else:
             return CommonResponse("error", {},status.HTTP_204_NO_CONTENT, "No deposits available")
