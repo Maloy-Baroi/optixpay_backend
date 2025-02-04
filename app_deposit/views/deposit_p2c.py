@@ -14,12 +14,13 @@ from app_bank.models.bank import BankTypeModel, AgentBankModel
 from app_deposit.models.deposit import Deposit, Currency
 from app_profile.models.agent import AgentProfile
 from app_profile.models.merchant import MerchantProfile
+from app_profile.models.wallet import MerchantWallet
 from utils.bkash_pay_grant import grant_token
 from utils.common_response import CommonResponse
 from utils.invoice_generate import generate_invoice_number
 from utils.optixpay_id_generator import generate_opx_id
 from utils.unique_default import get_unique_default
-from utils.withdraw_commission_calculation import calculate_balances_for_deposit
+from utils.deposit_commission_calculation import calculate_balances_for_deposit
 
 
 class VerifyMerchantView(APIView):
@@ -31,7 +32,7 @@ class VerifyMerchantView(APIView):
         try:
             unique_id = request.data.get('unique_id')
             # optixpay_component = request.data.get('optixpay_component')
-            payment_method = request.data.get('payment_method')
+            payment_method = request.data.get('payment_method', None)
             order_id = request.data.get('order_id', None)
             print("Bank category: ", payment_method)
             merchant = MerchantProfile.objects.filter(unique_id=unique_id).first()
@@ -42,11 +43,15 @@ class VerifyMerchantView(APIView):
             # Special work ends
 
             if not merchant:
-                print("Merchant not found", unique_id)
                 return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Merchant not found!")
             # okay
 
             if merchant:
+                merchant_wallet = merchant.merchant_wallet.filter(bank__category='p2c').first()
+                print("wallet", merchant_wallet)
+                if not merchant_wallet:
+                    return CommonResponse('error', {}, status.HTTP_400_BAD_REQUEST, "Merchant Wallet not found!")
+
                 print(f"Merchant found: {merchant}\n")
                 # Fetch a payment aggregator agent that supports the provided payment_method (provider)
                 # selected_agent_ids = BankTypeModel.objects.filter(
@@ -176,22 +181,64 @@ class DepositBKashPayView(APIView):
             payment_amount = request.data.get('payment_amount', None)
             payment_method = request.data.get('payment_method', None)
             payment_currency = request.data.get('payment_currency', None)
+            payment_currency_obj = Currency.objects.get(currency_code=payment_currency)
             deposit_id = request.data.get('deposit_id', None)
+            deposit = Deposit.objects.filter(id=int(deposit_id)).first()
+            if deposit is None:
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Deposit not found!")
+            deposit.sender_account = payment_amount
 
-            # Define the headers
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "username": agent_bank_username,
-                "password": agent_bank_password
-            }
-            print("Headers: ", headers)
+            try:
+                merchant_profile = MerchantProfile.objects.filter(id=deposit.merchant_id.id).first()
+                if merchant_profile is None:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found!")
 
-            # Define the body
-            data = {
-                "app_key": bank_obj.app_key,
-                "app_secret": bank_obj.secret_key
-            }
+                merchant_wallet = merchant_profile.merchant_wallet.filter(bank=deposit.bank.bank_type).first()
+                if not merchant_wallet:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Wallet not found!")
+                merchant_deposit_commission_percentage = merchant_wallet.deposit_commission
+                merchant_wallet_balance = merchant_wallet.balance
+                agent_deposit_commission_percentage = deposit.bank.deposit_commission
+                agent_bank_balance = deposit.bank.balance
+
+                merchant_balance_after, agent_balance_after, merchant_commission_amount_n_balance, agent_commission_amount_n_balance = calculate_balances_for_deposit(
+                    sent_amount=payment_amount,
+                    merchant_balance=merchant_wallet_balance,
+                    agent_balance=agent_bank_balance,
+                    merchant_commission=merchant_deposit_commission_percentage,
+                    agent_commission=agent_deposit_commission_percentage,
+                )
+
+                deposit.agent_amount_after_commission = agent_commission_amount_n_balance
+                deposit.merchant_amount_after_commission = merchant_commission_amount_n_balance
+                deposit.agent_balance_should_be = agent_balance_after
+                deposit.merchant_balance_should_be = merchant_balance_after
+
+                deposit.bank.balance = deposit.agent_balance_should_be
+                deposit.bank.save()
+
+                merchant_wallet.balance = deposit.merchant_balance_should_be
+                merchant_wallet.save()
+
+                deposit.sending_currency = payment_currency_obj
+                deposit.save()
+            except Exception as e:
+                print("the error is: ", str(e))
+                return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Found Nothing!")
+
+            # # Define the headers
+            # headers = {
+            #     "Content-Type": "application/json",
+            #     "Accept": "application/json",
+            #     "username": agent_bank_username,
+            #     "password": agent_bank_password
+            # }
+            #
+            # # Define the body
+            # data = {
+            #     "app_key": bank_obj.app_key,
+            #     "app_secret": bank_obj.secret_key
+            # }
 
             result = grant_token(bank_obj.app_key, bank_obj.secret_key, agent_bank_username, agent_bank_password)
 
@@ -204,7 +251,7 @@ class DepositBKashPayView(APIView):
                 response_json_dictionary['password'] = agent_bank_password
 
                 id_token = response_json_dictionary.get('id_token')
-                deposit_unique_id = response_json_dictionary.get('paymentID')
+                # deposit_id = response_json_dictionary.get('paymentID')
                 if id_token:
                     return CommonResponse("success", {"response_data": response_json_dictionary, "payment_id": deposit_id}, status.HTTP_200_OK, "Success")
             else:
@@ -262,7 +309,7 @@ class BkashPaymentInitiateAPIView(APIView):
 
                 # Make the POST request
                 response = requests.post(url, json=data, headers=headers)
-                deposit.txn_id = response.json().get('paymentID')
+                deposit.order_id = response.json().get('paymentID')
                 deposit.save()
 
                 # Handle the response based on status code
@@ -291,9 +338,19 @@ class BkashPaymentExecuteAPIView(APIView):
             if id_token:
                 deposit_id = request.data.get('deposit_id')
                 deposit_obj = Deposit.objects.get(id=int(deposit_id))
+                print('deposit obj: ', deposit_obj)
+                print('paymentId: ', deposit_obj.txn_id)
+
+                merchant_profile = MerchantProfile.objects.filter(id=deposit_obj.merchant_id.id).first()
+                if merchant_profile is None:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Merchant not found!")
+
+                merchant_wallet = merchant_profile.merchant_wallet.filter(bank=deposit_obj.bank.bank_type).first()
+                if not merchant_wallet:
+                    return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Wallet not found!")
 
                 payload = json.dumps({
-                    "paymentID": deposit_obj.txn_id
+                    "paymentID": deposit_obj.order_id
                 })
                 url = f"{settings.BKASH_BASE_URL}/tokenized/checkout/execute"
                 headers = {
@@ -318,12 +375,23 @@ class BkashPaymentExecuteAPIView(APIView):
                     deposit_obj.customer_id = response.json().get('customerMsisdn')
                     deposit_obj.sender_account = response.json().get('payerAccount')
                     deposit_obj.status = "success" if response.json().get('statusMessage').lower() else "cancelled"
-                    # payment_obj.transaction_type = 'deposit'
+                    received_currency_name = response.json().get('currency')
+                    received_currency_obj = Currency.objects.filter(currency_code=received_currency_name).first()
+                    if received_currency_obj is None:
+                        return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Currency not found!")
+                    deposit_obj.received_currency = received_currency_obj
+                    deposit_obj.actual_received_amount = response.json().get('amount')
                     deposit_obj.save()
 
                     return CommonResponse("success", response.json(), status.HTTP_200_OK, "Successful")
                 else:
                     deposit_obj.status = "failed"
+                    agent_commission_amount_n_balance = deposit_obj.agent_amount_after_commission
+                    merchant_commission_amount_n_balance = deposit_obj.merchant_amount_after_commission
+                    deposit_obj.bank.balance = deposit_obj.bank.balance + agent_commission_amount_n_balance
+                    deposit_obj.bank.save()
+                    merchant_wallet.balance = merchant_wallet.balance - merchant_commission_amount_n_balance
+                    merchant_wallet.save()
                     deposit_obj.save()
                     return CommonResponse("error", {}, status.HTTP_406_NOT_ACCEPTABLE, "Payment is unsuccessful")
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, "Could not authenticate")
