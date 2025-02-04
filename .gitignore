@@ -10,3 +10,4 @@ profiles
 Dockerfile
 docker-compose.yml
 udo ss -tuln | grep ':80'
+.github
