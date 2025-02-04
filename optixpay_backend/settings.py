@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', None)
+SECRET_KEY = config('SECRET_KEY', "p3o&w8*i$af4)nsb%65k=pyt@%9fkgo9=15^nxqz=o+z!w6i8")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -92,31 +92,30 @@ WSGI_APPLICATION = 'optixpay_backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 if not DEBUG:
-    # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': 'optixpay_db',  # Database name
-    #         'USER': 'optixpay',  # Database user
-    #         'PASSWORD': 'optix_pay_123',  # Database password
-    #         'HOST': '46.202.159.210',  # Set to your database host
-    #         'PORT': '5432',  # Default PostgreSQL port
-    #     }
-    # }
-
     DATABASES = {
-            'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', None),
+            'USER': config('DB_USER', None),
+            'PASSWORD': config('DB_PASSWORD', None),
+            'HOST': config('DB_HOST', None),
+            'PORT': config('DB_PORT', '5432'),
         }
-     }
+    }
+
+    # DATABASES = {
+    #         'default': {
+    #         'ENGINE': 'django.db.backends.sqlite3',
+    #         'NAME': BASE_DIR / 'db.sqlite3',
+    #     }
+    #  }
 else:
     DATABASES = {
-            'default': {
+        'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 
 CACHES = {
     'default': {
@@ -166,7 +165,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -193,7 +191,6 @@ NAGAD_MERCHANT_PUBLIC_KEY = os.path.join(BASE_DIR, 'keys', "Merchant_MC00VHB2008
 NAGAD_MERCHANT_PRIVATE_KEY = os.path.join(BASE_DIR, 'keys', "Merchant_MC00VHB20088378_1729337532364_pri.pem")
 NAGAD_CALLBACK_URL = 'http://optixpay.com/'
 NAGAD_API_VERSION = 'v-0.2.0'  # as mentioned in the guide
-
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -273,5 +270,4 @@ MINIO_STORAGE_ACCESS_KEY = "DlDYlIh7zzodF08GfMj4"
 MINIO_STORAGE_SECRET_KEY = "rZ8kB1B010XJYtF5eTkgTp1Dplncw5tC0eBonQjP"
 MINIO_STORAGE_BUCKET_NAME = 'optixpaybucket'  # The bucket name in MinIO
 
-COMMISSION=float(config('COMMISSION', 0))
-
+COMMISSION = float(config('COMMISSION', 0))
