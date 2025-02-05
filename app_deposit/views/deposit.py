@@ -29,6 +29,7 @@ class DepositListAPIView(APIView):
             login_user = request.user
 
             merchant = MerchantProfile.objects.filter(user=login_user).first()
+            agent = login_user.groups.filter(name='agent').first()
 
             page = request.query_params.get('page', 1)
             page_size = request.query_params.get('page_size', self.pagination_class.page_size)
@@ -42,6 +43,8 @@ class DepositListAPIView(APIView):
 
             if merchant:
                 deposits = deposits.filter(merchant_id=merchant)
+            elif agent:
+                deposits = deposits.filter(agent=agent)
 
             if deposit_id:
                 deposit = Deposit.objects.filter(id=deposit_id).first()
@@ -60,7 +63,7 @@ class DepositListAPIView(APIView):
             if search_status:
                 deposits = deposits.filter(status=search_status)
             if bank:
-                deposits = deposits.filter(bank__bank_name__icontains=bank)
+                deposits = deposits.filter(bank__bank_name__iexact=bank)
             if bank_type:
                 deposits = deposits.filter(bank__bank_type__category__iexact=bank_type)
 
