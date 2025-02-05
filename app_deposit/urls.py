@@ -1,5 +1,6 @@
 from django.urls import path
-from app_deposit.views.deposit import DepositAPIView, DepositListAPIView, DepositCreateAPIView
+from app_deposit.views.deposit import DepositAPIView, DepositListAPIView, DepositCreateAPIView, \
+    SendDepositDataToTheMerchantAPIView
 from app_deposit.views.currency import CurrencyUpdateAPIView, CurrencyListPostAPIView, CurrencyDeleteAPIView, \
     CreateCurrencyAPIView
 from app_deposit.views.deposit_p2c import VerifyMerchantView, DepositBKashPayView, BkashPaymentExecuteAPIView, \
@@ -20,6 +21,7 @@ urlpatterns = [
 
     path('deposits/', DepositListAPIView.as_view(), name='deposit-list'),  # Deposit List
     path('deposit/create/', DepositCreateAPIView.as_view(), name='deposit-create-internal'),  # Deposit List
+    path('deposit-webhook/', SendDepositDataToTheMerchantAPIView.as_view(), name='deposit-webhook'),
     path('merchants/verification/', VerifyMerchantView.as_view(), name='merchant-verification'),
     path('bkash/grants/', DepositBKashPayView.as_view(), name='merchant-verification'),
     path('bkash/execute/', BkashPaymentExecuteAPIView.as_view(), name='merchant-verification'),

@@ -7,13 +7,16 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from app_deposit.models.deposit import Deposit
 from app_deposit.serializers.deposit import DepositListSerializer, DepositCreateSerializer, DepositSerializer, \
-    DepositInternalCreateSerializer
+    DepositInternalCreateSerializer, DepositWebhookSerializers
 from app_profile.models.merchant import MerchantProfile
 
 from app_profile.models.profile import Profile
 from services.is_admin import IsAdminUser
+from services.is_merchant import IsMerchantUser
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
+from utils.withdraw_webhook_send_to_merchant import send_request
+
 
 # Know Issue
 
@@ -49,7 +52,11 @@ class DepositListAPIView(APIView):
                     return Response("Deposit not found", status=status.HTTP_204_NO_CONTENT)
 
             if search_query:
-                deposits = deposits.filter(Q(name__icontains=search_query) | Q(unique_id__icontains=search_query))
+                fields_to_search = ['txn_id', 'order_id', 'oxp_id']
+                query = Q()
+                for field in fields_to_search:
+                    query |= Q(**{f"{field}__icontains": search_query})
+                deposits = deposits.filter(query)
             if search_status:
                 deposits = deposits.filter(status=search_status)
             if bank:
@@ -148,3 +155,23 @@ class DepositCreateAPIView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+
+
+class SendDepositDataToTheMerchantAPIView(APIView):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+
+    def get(self, request):
+        try:
+            deposit_txn_id = request.query_params.get('deposit_txn_id', None)
+            deposit = Deposit.objects.filter(txn_id=deposit_txn_id).first()
+            if deposit is None:
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Transaction not found!")
+            url = deposit.success_callbackurl
+            deposit_serializers = DepositWebhookSerializers(deposit)
+            send_request(url, deposit_serializers)
+
+            return CommonResponse("success", deposit_serializers.data, status.HTTP_200_OK, "Data send successfully!")
+
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
+

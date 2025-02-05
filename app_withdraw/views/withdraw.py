@@ -16,7 +16,8 @@ from app_sms.models.sms import SMSManagement
 from app_withdraw.models.withdraw import Withdraw
 
 from app_deposit.serializers.deposit import DepositSerializer
-from app_withdraw.serializers.withdraw import WithdrawSerializer, WithdrawCreateSerializer, WithdrawUpdateSerializer
+from app_withdraw.serializers.withdraw import WithdrawSerializer, WithdrawCreateSerializer, WithdrawUpdateSerializer, \
+    WithdrawWebhookSerializers
 
 from app_profile.models.profile import Profile
 from django.db.models import Q
@@ -27,6 +28,7 @@ from services.is_agent import IsAgentUser
 from services.is_merchant import IsMerchantUser
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
+from utils.withdraw_webhook_send_to_merchant import send_request
 
 
 class WithdrawListAPIView(APIView):
@@ -57,9 +59,10 @@ class WithdrawListAPIView(APIView):
                     return CommonResponse("error", "withdraw not found", status.HTTP_204_NO_CONTENT)
 
             if search_query:
-                withdraws = withdraws.filter(
-                    Q(name__icontains=search_query) | Q(unique_id__icontains=search_query)
-                )
+                fields_to_search = ['txn_id', 'order_id', 'oxp_id']
+                query = Q()
+                for field in fields_to_search:
+                    query |= Q(**{f"{field}__icontains": search_query})
             if search_status:
                 withdraws = withdraws.filter(status=search_status)
             if bank:
@@ -227,3 +230,21 @@ class MerchantWalletListAPIView(APIView):
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
 
+
+class SendWithdrawDataToTheMerchantAPIView(APIView):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+
+    def get(self, request):
+        try:
+            withdraw_txn_id = request.query_params.get('withdraw_txn_id', None)
+            withdraw = Withdraw.objects.filter(txn_id=withdraw_txn_id).first()
+            if withdraw is None:
+                return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Transaction not found!")
+            url = withdraw.success_callbackurl
+            withdraw_serializers = WithdrawWebhookSerializers(withdraw)
+            send_request(url, withdraw_serializers)
+
+            return CommonResponse("success", withdraw_serializers.data, status.HTTP_200_OK, "Data send successfully!")
+
+        except Exception as e:
+            return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))

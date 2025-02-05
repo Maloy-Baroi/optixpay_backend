@@ -296,3 +296,16 @@ class DepositInternalCreateSerializer(serializers.ModelSerializer):
         validated_data['agent_commission'] = deposit_commission
         return super().create(validated_data)
 
+class DepositWebhookSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Deposit
+        fields = [
+            'customer_id',
+            'order_id',
+            'oxp_id',
+            'txn_id',
+            'sending_amount',
+            'sending_currency',
+        ]
+
+

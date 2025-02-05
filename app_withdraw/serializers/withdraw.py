@@ -418,3 +418,19 @@ class WithdrawUpdateSerializer(serializers.ModelSerializer):
                                                "message": "You do not have permission to update this record."})
 
         return instance
+
+
+class WithdrawWebhookSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Withdraw
+        fields = [
+            'customer_id',
+            'order_id',
+            'oxp_id',
+            'txn_id',
+            'requested_amount',
+            'converted_amount',
+            'requested_currency',
+            'sent_currency',
+            'sender_account',
+        ]
