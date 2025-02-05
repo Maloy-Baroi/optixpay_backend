@@ -90,6 +90,7 @@ class NewDepositListAPIView(APIView):
 
 class DepositAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, pk=None):
         if pk:
             try:
@@ -106,14 +107,13 @@ class DepositAPIView(APIView):
             deposit = Deposit.objects.get(pk=pk)
             if not deposit:
                 return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
-            serializer = DepositSerializer(deposit, data=request.data,context={'request': request}, partial=True)
+            serializer = DepositSerializer(deposit, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return CommonResponse("success", serializer.data, status.HTTP_200_OK, "Data Updated")
             return CommonResponse("error", serializer.errors, status.HTTP_400_BAD_REQUEST, serializer.errors)
         except Deposit.DoesNotExist:
             return CommonResponse("error", {}, status.HTTP_204_NO_CONTENT, "Deposit not found")
-
 
     def delete(self, request, pk=None):
         try:
@@ -174,4 +174,3 @@ class SendDepositDataToTheMerchantAPIView(APIView):
 
         except Exception as e:
             return CommonResponse("error", {}, status.HTTP_400_BAD_REQUEST, str(e))
-

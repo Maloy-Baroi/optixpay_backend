@@ -29,6 +29,7 @@ class DepositListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deposit
         fields = [
+            'id',
             'merchant_unique_id',
             'merchant_name',
             'customer_id',
