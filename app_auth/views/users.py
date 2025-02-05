@@ -121,13 +121,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 signature = None
 
                 if "agent" in groups:
-                    agent = AgentProfile.objects.filter(user=user).first()
-                    if agent and not agent.prepayment_address:
-                        result = x_signature_generate(user_id=user.id)
-                        if result and result['address']:
-                            agent.prepayment_address = result['address']
+                    agent = AgentProfile.objects.filter(user=user).only('prepayment_address').first()
+                    if agent and agent.prepayment_address:
+                        signature = agent.prepayment_address
+                    else:
                         agent.save()
-                    signature = agent.prepayment_address if agent else None
+                        prepayment_address = agent.prepayment_address
+                        signature = prepayment_address  # or some default value, if necessary
 
                 permissions = user.user_permissions.all()
 

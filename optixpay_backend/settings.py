@@ -197,6 +197,9 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+PASSIMPAY_PLATFORM_ID = config('PASSIMPAY_PLATFORM_ID', None)
+PASSIMPAY_SECRET_KEY = config('PASSIMPAY_SECRET_KEY', None)
+
 # SWAGGER_SETTINGS = {
 #     'USE_SESSION_AUTH': False,  # Disable session-based authentication for Swagger
 #     'SECURITY_DEFINITIONS': None,  # Ensure Swagger doesn't enforce token-based authentication
