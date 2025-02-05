@@ -19,7 +19,8 @@ class SMSManagement(BaseModel):
     balance = models.CharField(max_length=10)
     txn_id = models.CharField(max_length=255, unique=True)
     send_date = models.DateTimeField()
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Unclaimed')
+    sms_from = models.CharField(max_length=255, help_text="SMS from `bkash` or `nagad`...", null=True, default=None)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='unclaimed')
 
     class Meta:
         db_table = 'sms_table'

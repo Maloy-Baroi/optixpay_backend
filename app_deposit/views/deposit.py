@@ -11,6 +11,7 @@ from app_deposit.serializers.deposit import DepositListSerializer, DepositCreate
 from app_profile.models.merchant import MerchantProfile
 
 from app_profile.models.profile import Profile
+from services.is_admin import IsAdminUser
 from services.pagination import CustomPagination
 from utils.common_response import CommonResponse
 
@@ -20,21 +21,12 @@ class DepositListAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
 
-    # @swagger_auto_schema(
-    #     operation_description="Retrieve a list of deposits",
-    #     manual_parameters=[
-    #         openapi.Parameter(
-    #             'search_keyword',
-    #             openapi.IN_QUERY,
-    #             description="Keyword to search deposits by customer ID, order ID, etc.",
-    #             type=openapi.TYPE_STRING
-    #         )
-    #     ],
-    #     responses={200: DepositListSerializer(many=True)}
-    # )
-    #
     def get(self, request):
         try:
+            login_user = request.user
+
+            merchant = MerchantProfile.objects.filter(user=login_user).first()
+
             page = request.query_params.get('page', 1)
             page_size = request.query_params.get('page_size', self.pagination_class.page_size)
             search_query = request.query_params.get('search', '')
@@ -44,6 +36,9 @@ class DepositListAPIView(APIView):
             bank_type = request.query_params.get('bank_type', '')
 
             deposits = Deposit.objects.all()
+
+            if merchant:
+                deposits = deposits.filter(merchant_id=merchant)
 
             if deposit_id:
                 deposit = Deposit.objects.filter(id=deposit_id).first()

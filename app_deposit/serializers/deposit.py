@@ -7,9 +7,6 @@ from app_bank.serializers.bank import BankModelSerializer
 from app_deposit.models.deposit import Deposit, Currency
 from app_deposit.serializers.currency import CurrencySerializer
 from app_profile.models.merchant import MerchantProfile
-from app_profile.models.profile import Profile
-from app_profile.serializers.profile import ProfileSerializer
-from utils.decrypt_deposit_p2p_data import decrypt_deposit_p2p_data
 from utils.decrypt_payment_data import decrypt_payment_data
 from utils.encrypt_deposit_p2p_data import encrypt_deposit_p2p_data
 from utils.optixpay_id_generator import generate_opx_id
@@ -168,6 +165,7 @@ class DepositExternalCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
+            print("deposit starts")
             deposit_dictionary = {}
             optixpay_component = validated_data.get('optixpay_component')
             unique_id = validated_data.get('unique_id')
@@ -199,8 +197,9 @@ class DepositExternalCreateSerializer(serializers.ModelSerializer):
             sending_currency_obj = Currency.objects.filter(currency_code__iexact=sending_currency)
             if not sending_currency_obj.exists():
                 raise ValueError("Sending currency is not Valid!")
-            bank_type = BankTypeModel.objects.filter(name__iexact=bank_name, category='p2p').first()
-            agent_bank = AgentBankModel.objects.filter(bank_type=bank_type, usage_for='deposit')
+            # bank_type = BankTypeModel.objects.filter(name__iexact=bank_name, category='p2p').first()
+
+            agent_bank = AgentBankModel.objects.filter(bank_type__name__iexact=bank_name, bank_type__category__iexact='p2p')
 
             take_bank = []
             for bank in agent_bank:
@@ -254,6 +253,7 @@ class DepositExternalCreateSerializer(serializers.ModelSerializer):
             }
             return response_data
         except Exception as e:
+            print("Exception Error", str(e))
             return None
 
 
